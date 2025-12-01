@@ -93,24 +93,24 @@ export default function POSLayout() {
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  if (loading) return <div className="h-screen w-full flex items-center justify-center"><Loader2 className="animate-spin text-orange-500" /></div>;
+  if (loading) return <div className="h-screen w-full flex items-center justify-center"><Loader2 className="animate-spin text-[var(--primary)]" /></div>;
 
   return (
     <div className="flex h-screen w-full bg-gray-100 overflow-hidden font-sans">
       
-      {/* 1. Sidebar / Navigation (Desktop: Left, Mobile: Hidden) */}
-      <div className="hidden md:flex w-20 lg:w-24 bg-dark flex-col items-center py-6 gap-8 shrink-0 z-20 shadow-xl">
-        <div className="h-10 w-10 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-orange-500/30">
+      {/* 1. Sidebar / Navigation - Softer dark background */}
+      <div className="hidden md:flex w-20 lg:w-20 bg-slate-800 flex-col items-center py-6 gap-6 shrink-0 z-20 shadow-xl">
+        <div className="h-10 w-10 bg-[var(--primary)] rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg">
             <Store size={20} />
         </div>
         
-        <nav className="flex-1 flex flex-col gap-6 w-full items-center">
-            <button className="p-3 bg-white/10 rounded-xl text-orange-400 shadow-inner"><Grid size={24} /></button>
-            <button className="p-3 text-gray-500 hover:text-white hover:bg-white/5 rounded-xl transition-colors"><List size={24} /></button>
+        <nav className="flex-1 flex flex-col gap-4 w-full items-center">
+            <button className="p-3 bg-white/10 rounded-lg text-white/90 shadow-inner"><Grid size={22} /></button>
+            <button className="p-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"><List size={22} /></button>
         </nav>
 
-        <button onClick={handleLogout} className="p-3 text-red-400 hover:bg-red-400/10 rounded-xl transition-colors mb-4" title="Logout">
-            <LogOut size={24} />
+        <button onClick={handleLogout} className="p-3 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors mb-4" title="Déconnexion">
+            <LogOut size={22} />
         </button>
       </div>
 
@@ -118,25 +118,25 @@ export default function POSLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Header */}
-        <header className="bg-white h-16 md:h-20 px-4 md:px-8 border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm z-10">
+        <header className="bg-white h-16 md:h-18 px-4 md:px-6 border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm z-10">
             <div className="flex items-center gap-3">
                 {/* Mobile Logout (replaces sidebar) */}
                 <button onClick={handleLogout} className="md:hidden p-2 text-gray-500 hover:text-red-500">
                     <LogOut size={20} />
                 </button>
                 <div>
-                    <h1 className="text-lg md:text-xl font-bold text-gray-800 leading-tight">{shop?.name || 'Peelo POS'}</h1>
-                    <p className="text-xs md:text-sm text-gray-500 hidden sm:block">Operator: <span className="text-orange-600 font-medium">{cashier?.name}</span></p>
+                    <h1 className="text-lg md:text-xl font-bold text-gray-700 leading-tight">{shop?.name || 'Peelo POS'}</h1>
+                    <p className="text-xs text-gray-500 hidden sm:block">Caissier: <span className="text-[var(--primary)] font-medium">{cashier?.name}</span></p>
                 </div>
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="relative w-40 md:w-72">
+                <div className="relative w-40 md:w-64">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                     <input 
                         type="text" 
-                        placeholder="Search..." 
-                        className="w-full bg-gray-100 pl-9 pr-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:bg-white transition-all border border-transparent focus:border-orange-200"
+                        placeholder="Rechercher un produit..." 
+                        className="w-full bg-gray-100 pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:bg-white transition-all border border-transparent"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -144,7 +144,7 @@ export default function POSLayout() {
                 
                 {/* Mobile Cart Toggle */}
                 <button 
-                    className="lg:hidden relative p-2.5 bg-orange-50 text-orange-600 rounded-xl active:bg-orange-100 transition-colors"
+                    className="lg:hidden relative p-2.5 bg-[var(--primary)]/10 text-[var(--primary)] rounded-lg active:bg-[var(--primary)]/20 transition-colors"
                     onClick={() => setMobileCartOpen(!mobileCartOpen)}
                 >
                     <ShoppingCart size={22} />
@@ -160,28 +160,28 @@ export default function POSLayout() {
         {/* Content Grid */}
         <div className="flex-1 flex overflow-hidden relative">
             {/* Products Area */}
-            <div className="flex-1 flex flex-col bg-gray-50/50">
+            <div className="flex-1 flex flex-col bg-slate-50">
                 
                 {/* Categories */}
-                <div className="px-4 md:px-8 py-4 overflow-x-auto no-scrollbar flex gap-3 shrink-0">
+                <div className="px-4 md:px-6 py-4 overflow-x-auto no-scrollbar flex gap-2 shrink-0">
                     <button 
                         onClick={() => setActiveCategory('all')}
-                        className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all shadow-sm active:scale-95
+                        className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all shadow-sm active:scale-95
                             ${activeCategory === 'all' 
-                                ? 'bg-orange-500 text-white shadow-orange-200' 
-                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-100'}`}
+                                ? 'bg-[var(--primary)] text-white' 
+                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}`}
                     >
-                        All Items
+                        Tout
                     </button>
                     {/* Extract unique categories */}
                     {Array.from(new Set(products.map(p => p.category))).map(cat => (
                          <button 
                          key={cat}
                          onClick={() => setActiveCategory(cat)}
-                         className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all shadow-sm active:scale-95
+                         className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all shadow-sm active:scale-95
                              ${activeCategory === cat
-                                 ? 'bg-orange-500 text-white shadow-orange-200' 
-                                 : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-100'}`}
+                                 ? 'bg-[var(--primary)] text-white' 
+                                 : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}`}
                      >
                          {cat}
                      </button>
@@ -189,15 +189,15 @@ export default function POSLayout() {
                 </div>
 
                 {/* Product Grid */}
-                <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-24 md:pb-8 custom-scrollbar">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+                <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-24 md:pb-6 custom-scrollbar">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                         {filteredProducts.map(product => (
                             <div 
                                 key={product._id} 
                                 onClick={() => handleProductClick(product)}
-                                className="bg-white p-3 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer border border-transparent hover:border-orange-200 group flex flex-col h-full relative"
+                                className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer border border-gray-100 hover:border-[var(--primary)] group flex flex-col h-full relative"
                             >
-                                <div className="aspect-square rounded-xl bg-gray-100 overflow-hidden mb-3 relative">
+                                <div className="aspect-square rounded-md bg-gray-100 overflow-hidden mb-3 relative">
                                     {product.images[0] ? (
                                         <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                     ) : (
@@ -207,13 +207,13 @@ export default function POSLayout() {
                                     )}
                                     {product.stock <= 0 && (
                                         <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center">
-                                            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded font-bold shadow-sm">Out of Stock</span>
+                                            <span className="bg-red-500 text-white text-[10px] px-2 py-1 rounded font-bold shadow-sm uppercase tracking-wide">Rupture</span>
                                         </div>
                                     )}
                                 </div>
-                                <h3 className="font-semibold text-gray-800 text-sm md:text-base leading-tight mb-1 line-clamp-2">{product.title}</h3>
+                                <h3 className="font-bold text-gray-700 text-sm leading-tight mb-1 line-clamp-2">{product.title}</h3>
                                 <div className="mt-auto flex items-center justify-between">
-                                    <span className="font-bold text-orange-600">
+                                    <span className="font-extrabold text-[var(--primary)] text-sm">
                                         {product.price.toLocaleString()} F
                                     </span>
                                     {product.hasVariants && <span className="text-[10px] uppercase font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded tracking-wide">Options</span>}
@@ -226,7 +226,7 @@ export default function POSLayout() {
 
             {/* Cart Section - Desktop: Column, Mobile: Drawer */}
             <div className={`
-                fixed inset-y-0 right-0 z-30 w-full sm:w-[400px] bg-white shadow-2xl transform transition-transform duration-300 lg:relative lg:transform-none lg:w-[380px] lg:shadow-none lg:border-l lg:border-gray-200 lg:block
+                fixed inset-y-0 right-0 z-30 w-full sm:w-[380px] bg-white shadow-2xl transform transition-transform duration-300 lg:relative lg:transform-none lg:w-[360px] lg:shadow-none lg:border-l lg:border-gray-200 lg:block
                 ${mobileCartOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
             `}>
                 {/* Mobile Close Button */}

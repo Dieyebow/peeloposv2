@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, PropsWithChildren } from 'react';
+import React, { createContext, useContext, useEffect, useState, PropsWithChildren } from 'react';
 import { Cashier, Shop, CartItem } from '../types';
 
 interface POSContextType {
@@ -17,12 +17,28 @@ interface POSContextType {
 
 const POSContext = createContext<POSContextType | undefined>(undefined);
 
-// Fix: Use PropsWithChildren to make children prop optional in type definition, avoiding errors when consumers use it with nested elements
 export const POSProvider = ({ children }: PropsWithChildren<{}>) => {
   const [shop, setShop] = useState<Shop | null>(null);
   const [cashier, setCashier] = useState<Cashier | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [chatbotId, setChatbotId] = useState<string | null>(null);
+
+  // Inject Shop Colors into CSS Variables
+  useEffect(() => {
+    if (shop?.style) {
+      document.documentElement.style.setProperty('--primary', shop.style.primaryColor);
+      // Fallback to primary if secondary isn't defined or distinct
+      document.documentElement.style.setProperty('--secondary', shop.style.secondaryColor || shop.style.primaryColor);
+      
+      // Calculate a lighter shade for backgrounds (rough approximation)
+      document.documentElement.style.setProperty('--primary-light', `${shop.style.primaryColor}15`); // 15 = roughly 8% opacity hex
+    } else {
+      // Default fallback
+      document.documentElement.style.setProperty('--primary', '#075E54');
+      document.documentElement.style.setProperty('--secondary', '#128C7E');
+      document.documentElement.style.setProperty('--primary-light', '#075E5415');
+    }
+  }, [shop]);
 
   const addToCart = (newItem: CartItem) => {
     setCart(prev => {

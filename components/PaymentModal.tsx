@@ -11,10 +11,10 @@ interface Props {
 }
 
 const PAYMENT_METHODS: PaymentMethod[] = [
-  { id: 'cash', name: 'Cash', icon: 'cash', color: '#10b981' },
+  { id: 'cash', name: 'Espèces', icon: 'cash', color: '#10b981' },
   { id: 'orange_money', name: 'Orange Money', icon: 'om', color: '#ff6600' },
   { id: 'wave', name: 'Wave', icon: 'wave', color: '#1e88e5' },
-  { id: 'card', name: 'Card', icon: 'card', color: '#6366f1' },
+  { id: 'card', name: 'Carte', icon: 'card', color: '#6366f1' },
 ];
 
 export default function PaymentModal({ total, onClose, onSuccess }: Props) {
@@ -38,8 +38,6 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
   };
 
   const handleExact = () => {
-    // If we click exact, we fill the remaining amount for the current method
-    // But we need to account for what's already paid by other methods
     const othersPaid = totalPaid - (payments[activeMethod] || 0);
     const needed = Math.max(0, total - othersPaid);
     setPayments(prev => ({ ...prev, [activeMethod]: needed }));
@@ -63,7 +61,6 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
       subtotal: total,
       discount: 0,
       totalAmount: total,
-      // Fix: Cast amount to number and use explicit map/filter typing to fix unknown inference
       payments: Object.entries(payments)
         .map(([method, amount]) => ({ method, amount: amount as number }))
         .filter(p => p.amount > 0),
@@ -78,7 +75,7 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
       clearCart();
       onSuccess(txn);
     } catch (e) {
-      alert("Transaction failed. Try again.");
+      alert("Échec de la transaction. Veuillez réessayer.");
     } finally {
       setProcessing(false);
     }
@@ -94,50 +91,50 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-3xl w-full max-w-4xl h-[85vh] shadow-2xl overflow-hidden flex flex-col md:flex-row">
+      <div className="bg-white rounded-xl w-full max-w-4xl h-[85vh] shadow-2xl overflow-hidden flex flex-col md:flex-row font-sans">
         
         {/* Left: Summary & Keypad */}
         <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col bg-gray-50 border-r border-gray-200">
           <div className="flex justify-between items-start mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Payment</h2>
+            <h2 className="text-xl font-bold text-gray-800">Paiement</h2>
              <div className="text-right">
-                <p className="text-sm text-gray-500 uppercase tracking-wide">Total Due</p>
-                <p className="text-3xl font-bold text-gray-900">{total.toLocaleString()} F</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wide font-bold">Total Dû</p>
+                <p className="text-3xl font-extrabold text-gray-900">{total.toLocaleString()} F</p>
              </div>
           </div>
 
           <div className="flex-1 flex flex-col justify-center">
-             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6">
+             <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 mb-6">
                  <div className="flex justify-between mb-2">
-                     <span className="text-gray-500">Paid</span>
-                     <span className="font-semibold text-green-600">{totalPaid.toLocaleString()} F</span>
+                     <span className="text-gray-500 font-medium">Déjà payé</span>
+                     <span className="font-bold text-green-600">{totalPaid.toLocaleString()} F</span>
                  </div>
                  <div className="flex justify-between mb-2">
-                     <span className="text-gray-500">Remaining</span>
-                     <span className="font-semibold text-orange-600">{remaining.toLocaleString()} F</span>
+                     <span className="text-gray-500 font-medium">Reste</span>
+                     <span className="font-bold text-orange-600">{remaining.toLocaleString()} F</span>
                  </div>
-                 <div className="border-t border-gray-100 pt-2 flex justify-between">
-                     <span className="text-gray-800 font-medium">Change</span>
-                     <span className="font-bold text-gray-900">{change.toLocaleString()} F</span>
+                 <div className="border-t border-gray-100 pt-3 mt-1 flex justify-between">
+                     <span className="text-gray-800 font-bold">Monnaie</span>
+                     <span className="font-extrabold text-gray-900">{change.toLocaleString()} F</span>
                  </div>
              </div>
 
-             <div className="mb-2 text-sm font-medium text-gray-500">Enter amount for {PAYMENT_METHODS.find(m => m.id === activeMethod)?.name}</div>
+             <div className="mb-2 text-sm font-bold text-gray-500">Montant pour {PAYMENT_METHODS.find(m => m.id === activeMethod)?.name}</div>
              <input 
                 type="number" 
                 value={payments[activeMethod] || ''}
                 onChange={(e) => handleAmountChange(e.target.value)}
                 placeholder="0"
-                className="w-full text-4xl font-bold p-4 rounded-xl border-2 border-orange-500 focus:outline-none focus:ring-4 focus:ring-orange-100 bg-white text-right mb-4"
+                className="w-full text-4xl font-bold p-4 rounded-lg border border-[var(--primary)] focus:outline-none focus:ring-4 focus:ring-[var(--primary)]/20 bg-white text-right mb-4"
                 autoFocus
              />
              
-             <div className="grid grid-cols-4 gap-3 mb-4">
+             <div className="grid grid-cols-4 gap-2 mb-4">
                  {[1000, 2000, 5000, 10000].map(amt => (
                      <button 
                         key={amt} 
                         onClick={() => handleQuickAmount(amt)}
-                        className="py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:border-orange-500 hover:text-orange-600 font-medium transition-colors"
+                        className="py-3 rounded-lg bg-white border border-gray-200 text-gray-600 hover:border-[var(--primary)] hover:text-[var(--primary)] font-bold transition-colors text-sm"
                      >
                          {amt/1000}k
                      </button>
@@ -145,9 +142,9 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
              </div>
              <button 
                 onClick={handleExact}
-                className="w-full py-3 rounded-xl bg-gray-800 text-white font-medium hover:bg-gray-900 transition-colors"
+                className="w-full py-4 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-900 transition-colors shadow-lg"
              >
-                 Pay Exact Amount ({remaining.toLocaleString()} F)
+                 Montant Exact ({remaining.toLocaleString()} F)
              </button>
           </div>
         </div>
@@ -155,7 +152,7 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
         {/* Right: Methods & Action */}
         <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col bg-white">
             <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-700">Select Method</h3>
+                <h3 className="text-lg font-bold text-gray-700">Mode de paiement</h3>
                 <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400">
                     <X size={24} />
                 </button>
@@ -166,16 +163,16 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
                     <button
                         key={method.id}
                         onClick={() => setActiveMethod(method.id)}
-                        className={`p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-200
+                        className={`p-6 rounded-xl border flex flex-col items-center justify-center gap-3 transition-all duration-200
                             ${activeMethod === method.id 
-                                ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-md' 
-                                : 'border-gray-100 bg-white text-gray-500 hover:border-gray-200 hover:bg-gray-50'
+                                ? 'border-[var(--primary)] bg-[var(--primary)]/5 text-[var(--primary)] shadow-md' 
+                                : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200 hover:bg-gray-50'
                             }`}
                     >
-                        <div className={`p-3 rounded-full ${activeMethod === method.id ? 'bg-orange-100' : 'bg-gray-100'}`}>
+                        <div className={`p-3 rounded-full ${activeMethod === method.id ? 'bg-[var(--primary)] text-white' : 'bg-gray-100'}`}>
                             {renderIcon(method.id)}
                         </div>
-                        <span className="font-semibold">{method.name}</span>
+                        <span className="font-bold">{method.name}</span>
                         {payments[method.id] > 0 && (
                             <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded-full">
                                 {payments[method.id].toLocaleString()} F
@@ -188,13 +185,13 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
             <button
                 onClick={processPayment}
                 disabled={totalPaid < total || processing}
-                className={`w-full py-5 rounded-2xl text-xl font-bold text-white flex items-center justify-center gap-3 transition-all shadow-lg
+                className={`w-full py-5 rounded-xl text-lg font-bold text-white flex items-center justify-center gap-3 transition-all shadow-lg
                     ${totalPaid >= total 
-                        ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:scale-[1.02] shadow-orange-200' 
+                        ? 'bg-[var(--primary)] hover:opacity-90 active:scale-[0.98]' 
                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
             >
-                {processing ? <Loader2 className="animate-spin" /> : <>Complete Payment <CheckCircle /></>}
+                {processing ? <Loader2 className="animate-spin" /> : <>Valider le paiement <CheckCircle /></>}
             </button>
         </div>
       </div>
