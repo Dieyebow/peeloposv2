@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { usePOS } from '../context/POSContext';
 import { Cashier } from '../types';
-import { Loader2, ArrowLeft, ChevronDown, Monitor, Delete, ShoppingBag, Store } from 'lucide-react';
+import { Loader2, ArrowLeft, ArrowRight, Delete, ShoppingBag, Store, Lock } from 'lucide-react';
 
 const TEST_BOTS = [
   { id: '69177048073213c297170052', name: 'Boutique 1' },
@@ -30,7 +30,6 @@ export default function POSLogin() {
     }
   }, [chatbotId]);
 
-  // Focus input when cashier is selected
   useEffect(() => {
     if (selectedCashier) {
       setTimeout(() => {
@@ -39,7 +38,6 @@ export default function POSLogin() {
     }
   }, [selectedCashier]);
 
-  // Global paste handler
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
         if (!selectedCashier) return;
@@ -61,7 +59,6 @@ export default function POSLogin() {
 
   const loadData = async (id: string) => {
     setLoading(true);
-    setShop(null as any); 
     setCashiers([]);
     
     try {
@@ -134,186 +131,180 @@ export default function POSLogin() {
 
   const getAvatarUrl = (c: Cashier) => {
     if (c.avatar) return c.avatar;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random&color=fff&size=128&bold=true`;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random&color=fff&size=128&bold=true&rounded=true`;
   };
 
   if (loading) return (
-    <div className="flex h-screen w-full items-center justify-center bg-[#eaeaec] flex-col gap-4">
+    <div className="flex h-screen w-full items-center justify-center bg-[#eaeaec] flex-col gap-4 font-sans">
       <Loader2 className="animate-spin h-10 w-10 text-[var(--primary)]" />
     </div>
   );
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-[#eaeaec] flex items-center justify-center p-4 md:p-8 font-sans">
+    <div className="fixed inset-0 w-full h-full bg-[#f8fafc] flex items-center justify-center font-sans overflow-hidden">
       
-      {/* Main Container */}
-      <div className="w-full max-w-[1400px] h-full md:h-[90vh] bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-200">
-        
-        {/* LEFT PANEL: Shop Branding */}
-        <div className="w-full md:w-[45%] bg-slate-50 relative overflow-hidden order-2 md:order-1 flex flex-col p-10 md:p-16 border-r border-gray-100">
-          
-          <div className="relative z-10 flex flex-col h-full justify-center items-start text-left">
-             {/* Shop Logo / Name */}
-             <div className="mb-8">
-               {shop?.logo ? (
-                 <img src={shop.logo} alt={shop.name} className="h-24 md:h-32 object-contain rounded-xl" />
-               ) : (
-                 <div className="h-24 w-24 md:h-32 md:w-32 bg-[var(--primary)] rounded-2xl flex items-center justify-center text-white shadow-lg mb-4">
-                    <Store size={48} />
-                 </div>
-               )}
-               {(!shop?.logo) && <h1 className="text-4xl font-extrabold text-gray-900 mt-4 tracking-tight">{shop?.name || 'Ma Boutique'}</h1>}
-             </div>
-
-             {/* Description */}
-             <div className="max-w-md">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                  {shop?.name ? `Bienvenue chez ${shop.name}` : 'Bienvenue'}
-                </h1>
-                <p className="text-lg text-gray-500 font-medium leading-relaxed">
-                  {shop?.description || "Connectez-vous pour commencer à encaisser vos clients et gérer vos ventes."}
-                </p>
-             </div>
-          </div>
-
-          {/* Bottom Info */}
-          <div className="mt-auto pt-12 relative z-10 hidden md:flex items-center justify-between w-full border-t border-gray-200/50">
-             <div className="flex items-center gap-2 text-[var(--primary)] font-bold text-xs uppercase tracking-wider">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                Terminal Connecté
-             </div>
-             <div className="relative inline-block">
-                <select 
-                  value={chatbotId} 
-                  onChange={handleSwitchBot}
-                  className="appearance-none bg-transparent text-gray-400 text-xs font-bold cursor-pointer focus:outline-none hover:text-[var(--primary)] transition-colors text-right"
-                >
-                  {TEST_BOTS.map(bot => (
-                    <option key={bot.id} value={bot.id}>{bot.name}</option>
-                  ))}
-                </select>
-             </div>
-          </div>
-        </div>
-
-        {/* RIGHT PANEL: Interaction */}
-        <div className="flex-1 bg-white p-6 md:p-12 flex flex-col items-center justify-center relative order-1 md:order-2">
-           
-           {/* Header Logo (Peelo) */}
-           <div className="absolute top-8 md:top-12 flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#114232] rounded-lg flex items-center justify-center shadow-lg transform -rotate-3">
-                  <ShoppingBag className="text-white w-5 h-5" strokeWidth={2.5} />
+      {/* Background with Split */}
+      <div className="absolute inset-0 flex">
+          {/* Left Side - Brand Color */}
+          <div 
+             className="w-full md:w-1/2 h-full flex flex-col items-center justify-center p-12 text-white relative transition-all duration-700 ease-in-out"
+             style={{ backgroundColor: shop?.style?.primaryColor || '#00c58e' }}
+          >
+              <div className="absolute inset-0 bg-black/5 pattern-grid-lg opacity-10"></div>
+              
+              <div className="relative z-10 flex flex-col items-center animate-in slide-in-from-left-10 duration-700 fade-in">
+                  <div className="w-48 h-48 bg-white rounded-full p-2 shadow-2xl mb-8 flex items-center justify-center ring-8 ring-white/10">
+                      {shop?.logo ? (
+                          <img src={shop.logo} alt={shop.name} className="w-full h-full object-cover rounded-full" />
+                      ) : (
+                          <div className="w-full h-full rounded-full bg-gray-50 flex items-center justify-center text-[var(--primary)]">
+                              <Store size={64} />
+                          </div>
+                      )}
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center tracking-tight">{shop?.name || 'Peelo POS'}</h1>
+                  <p className="text-xl opacity-90 text-center font-medium max-w-md">{shop?.description || 'Bienvenue sur votre terminal de vente.'}</p>
               </div>
-              <h2 className="text-3xl font-bold text-[#114232] tracking-tight">Peelo</h2>
-           </div>
 
-           {/* Content */}
-           {!selectedCashier ? (
-             <div className="w-full max-w-2xl text-center animate-in fade-in duration-500 mt-16 md:mt-0">
-                 <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Bon après-midi.</h3>
-                 <p className="text-gray-400 mb-12 text-sm font-medium">Qui prend la caisse aujourd'hui ?</p>
+              {/* Footer Info */}
+              <div className="absolute bottom-8 left-8 text-xs font-semibold opacity-60 flex gap-4">
+                  <span>TERMINAL: {chatbotId?.slice(0,8)}</span>
+                  <span>•</span>
+                  <span>V2.4.0</span>
+              </div>
+          </div>
 
-                 {/* Cashier Grid */}
-                 <div className="flex flex-wrap justify-center gap-6">
-                    {cashiers.map(c => (
-                        <button 
-                            key={c._id}
-                            onClick={() => setSelectedCashier(c)}
-                            className="group flex flex-col items-center gap-3 p-4 rounded-2xl hover:bg-gray-50/80 transition-all duration-200 w-32 md:w-40 border border-transparent hover:border-gray-100"
-                        >
-                            <div className="relative">
-                                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-md transition-all">
-                                    <img src={getAvatarUrl(c)} alt={c.name} className="w-full h-full object-cover" />
-                                </div>
-                            </div>
-                            <div className="text-center">
-                                <p className="font-bold text-gray-800 text-sm group-hover:text-[#114232] transition-colors">{c.name.split(' ')[0]}</p>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mt-1">
-                                    {c.role === 'cashier' ? 'GÉRANT' : c.role}
-                                </p>
-                            </div>
-                        </button>
-                    ))}
-                 </div>
+          {/* Right Side - Interaction */}
+          <div className="hidden md:flex w-1/2 h-full bg-white flex-col items-center justify-center p-12 relative">
+             <div className="absolute top-8 right-8">
+                <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full border border-gray-100">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span className="text-xs font-bold text-gray-500">Système Connecté</span>
+                </div>
              </div>
-           ) : (
-             <div className="w-full max-w-[320px] text-center animate-in fade-in slide-in-from-right-8 duration-300 mt-16 md:mt-0">
-                <button 
-                  onClick={() => { setSelectedCashier(null); setPin(''); setError(''); }}
-                  className="absolute top-8 left-8 md:top-12 md:left-12 p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
-                >
-                  <ArrowLeft size={24} />
-                </button>
+             
+             <div className="w-full max-w-md">
+                 {!selectedCashier ? (
+                     <div className="animate-in slide-in-from-right-8 duration-500 fade-in">
+                         <div className="mb-10">
+                             <h2 className="text-3xl font-bold text-gray-900 mb-2">Connexion Caissier</h2>
+                             <p className="text-gray-500">Veuillez sélectionner votre profil pour commencer.</p>
+                         </div>
+                         
+                         <div className="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                             {cashiers.map(c => (
+                                 <button
+                                     key={c._id}
+                                     onClick={() => setSelectedCashier(c)}
+                                     className="w-full flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white hover:border-[var(--secondary)] hover:bg-[var(--secondary)]/5 hover:shadow-lg transition-all duration-200 group text-left"
+                                 >
+                                     <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200 group-hover:border-[var(--secondary)] transition-colors">
+                                         <img src={getAvatarUrl(c)} className="w-full h-full object-cover" />
+                                     </div>
+                                     <div className="flex-1">
+                                         <h3 className="font-bold text-gray-900 text-lg group-hover:text-[var(--secondary)] transition-colors">{c.name}</h3>
+                                         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{c.role}</span>
+                                     </div>
+                                     <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-[var(--secondary)] group-hover:text-white transition-colors">
+                                         <ArrowRight size={16} />
+                                     </div>
+                                 </button>
+                             ))}
+                         </div>
+                     </div>
+                 ) : (
+                     <div className="animate-in zoom-in-95 duration-300">
+                         <button 
+                             onClick={() => setSelectedCashier(null)}
+                             className="mb-8 flex items-center gap-2 text-gray-400 hover:text-gray-900 transition-colors font-medium"
+                         >
+                             <ArrowLeft size={18} /> Retour
+                         </button>
 
-                <div className="w-24 h-24 rounded-2xl overflow-hidden mx-auto mb-6 shadow-lg">
-                    <img src={getAvatarUrl(selectedCashier)} className="w-full h-full object-cover" />
-                </div>
-                
-                <h3 className="text-2xl font-bold text-gray-800 mb-1">Bonjour, {selectedCashier.name.split(' ')[0]}</h3>
-                <p className="text-gray-400 text-sm mb-8 font-medium">Entrez votre code PIN</p>
+                         <div className="text-center mb-8">
+                             <div className="w-24 h-24 rounded-2xl mx-auto mb-4 overflow-hidden shadow-xl ring-4 ring-gray-50">
+                                 <img src={getAvatarUrl(selectedCashier)} className="w-full h-full object-cover" />
+                             </div>
+                             <h3 className="text-2xl font-bold text-gray-900">Bonjour, {selectedCashier.name.split(' ')[0]}</h3>
+                             <div className="flex items-center justify-center gap-2 mt-2 text-gray-400 text-sm font-medium">
+                                 <Lock size={14} /> Accès sécurisé
+                             </div>
+                         </div>
 
-                {/* Hidden Input */}
-                <input
-                    ref={inputRef}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={4}
-                    value={pin}
-                    onChange={handleInputChange}
-                    className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
-                    autoFocus
-                />
+                         {/* PIN Display */}
+                         <div className="flex justify-center gap-4 mb-8 relative z-20" onClick={() => inputRef.current?.focus()}>
+                             {[0, 1, 2, 3].map(i => (
+                                 <div key={i} className={`
+                                     w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all duration-200
+                                     ${i < pin.length 
+                                         ? 'border-[var(--secondary)] bg-[var(--secondary)] text-white scale-110 shadow-lg' 
+                                         : 'border-gray-200 bg-gray-50'}
+                                     ${error ? 'border-red-500 animate-shake' : ''}
+                                 `}>
+                                     {i < pin.length && <div className="w-3 h-3 rounded-full bg-white"></div>}
+                                 </div>
+                             ))}
+                         </div>
 
-                {/* PIN Display */}
-                <div className="flex justify-center gap-4 mb-8" onClick={() => inputRef.current?.focus()}>
-                    {[0, 1, 2, 3].map(i => (
-                      <div key={i} className={`
-                        w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold transition-all duration-200
-                        ${i < pin.length
-                          ? 'bg-[#114232] text-white shadow-lg shadow-[#114232]/20 scale-105' 
-                          : 'bg-white text-transparent border border-gray-200'}
-                        ${error ? 'bg-red-50 border-red-200 animate-shake' : ''}
-                      `}>
-                        {i < pin.length ? '●' : ''}
-                      </div>
-                    ))}
-                </div>
+                         {error && <p className="text-center text-red-500 font-bold mb-6 text-sm">{error}</p>}
 
-                {error && <p className="text-red-500 text-sm font-bold mb-4 animate-bounce">{error}</p>}
+                         <input
+                             ref={inputRef}
+                             type="text"
+                             inputMode="numeric"
+                             maxLength={4}
+                             value={pin}
+                             onChange={handleInputChange}
+                             className="absolute inset-0 opacity-0 z-10"
+                             autoFocus
+                         />
 
-                {/* Custom Numpad */}
-                <div className="grid grid-cols-3 gap-3">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-                    <button
-                      key={num}
-                      onClick={() => handlePinInput(num.toString())}
-                      className="h-16 w-full rounded-xl bg-white border border-gray-100 text-xl font-bold text-gray-800 hover:bg-gray-50 transition-all duration-100 active:scale-95 shadow-sm"
-                    >
-                      {num}
-                    </button>
-                  ))}
-                  <div className="opacity-0"></div>
-                  <button
-                    onClick={() => handlePinInput('0')}
-                    className="h-16 w-full rounded-xl bg-white border border-gray-100 text-xl font-bold text-gray-800 hover:bg-gray-50 transition-all duration-100 active:scale-95 shadow-sm"
-                  >
-                    0
-                  </button>
-                  <button
-                    onClick={handleBackspace}
-                    className="h-16 w-full rounded-xl bg-white border border-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all duration-100 active:scale-95 shadow-sm flex items-center justify-center"
-                  >
-                    <Delete size={20} />
-                  </button>
-                </div>
-
+                         {/* Numpad */}
+                         <div className="grid grid-cols-3 gap-3 relative z-20">
+                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(num => (
+                                 <button
+                                     key={num}
+                                     onClick={() => handlePinInput(num.toString())}
+                                     className={`
+                                         h-16 rounded-xl font-bold text-2xl transition-all shadow-sm active:scale-95 border border-gray-100
+                                         ${num === 0 ? 'col-start-2' : ''}
+                                         bg-white text-gray-900 hover:bg-[var(--secondary)] hover:text-white hover:border-[var(--secondary)]
+                                     `}
+                                 >
+                                     {num}
+                                 </button>
+                             ))}
+                             <button 
+                                 onClick={handleBackspace}
+                                 className="h-16 rounded-xl font-bold text-xl flex items-center justify-center bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors col-start-3 row-start-4 active:scale-95 border border-transparent"
+                             >
+                                 <Delete size={24} />
+                             </button>
+                         </div>
+                     </div>
+                 )}
              </div>
-           )}
-
-           <div className="absolute bottom-6 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
-              PEELO POS V2.0 • TERMINAL SÉCURISÉ
-           </div>
-        </div>
+             
+             {/* Mobile Dev Switcher */}
+             <div className="absolute bottom-4 right-4">
+                 <select 
+                   value={chatbotId} 
+                   onChange={handleSwitchBot}
+                   className="text-xs bg-gray-50 border border-gray-200 rounded p-1 text-gray-400"
+                 >
+                   {TEST_BOTS.map(bot => (
+                     <option key={bot.id} value={bot.id}>{bot.name}</option>
+                   ))}
+                 </select>
+             </div>
+          </div>
+      </div>
+      
+      {/* Mobile Only View (Simplified) */}
+      <div className="md:hidden absolute inset-0 bg-[var(--primary)] flex flex-col items-center justify-center text-white p-8 text-center">
+          <Store size={48} className="mb-4" />
+          <h2 className="text-2xl font-bold">Mode Bureau Requis</h2>
+          <p className="opacity-80 mt-2">Veuillez utiliser une tablette ou un ordinateur pour accéder au POS.</p>
       </div>
     </div>
   );

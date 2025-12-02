@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { usePOS } from '../context/POSContext';
 import { PaymentMethod, TransactionPayload } from '../types';
-import { X, CheckCircle, Wallet, CreditCard, Banknote, Smartphone, Loader2, Printer } from 'lucide-react';
+import { X, CheckCircle, Smartphone, Loader2 } from 'lucide-react';
 import { api } from '../services/api';
 
 interface Props {
@@ -83,58 +83,72 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
 
   const renderIcon = (id: string) => {
       switch(id) {
-          case 'cash': return <Banknote size={20} />;
-          case 'card': return <CreditCard size={20} />;
-          default: return <Smartphone size={20} />;
+          case 'cash': 
+             return <img src="https://cdn-icons-png.flaticon.com/512/2488/2488749.png" alt="Espèces" className="w-full h-full object-contain" />;
+          case 'orange_money': 
+             return <img src="https://api.peelo.chat/public/images/om.png" alt="Orange Money" className="w-full h-full object-contain" />;
+          case 'wave': 
+             return <img src="https://api.peelo.chat/public/images/wave.png" alt="Wave" className="w-full h-full object-contain" />;
+          case 'card': 
+             return <img src="https://cdn-icons-png.flaticon.com/512/4341/4341764.png" alt="Carte" className="w-full h-full object-contain" />;
+          default: 
+             return <Smartphone size={24} />;
       }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl w-full max-w-4xl h-[85vh] shadow-2xl overflow-hidden flex flex-col md:flex-row font-sans">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-[32px] w-full max-w-5xl h-[85vh] shadow-2xl overflow-hidden flex flex-col md:flex-row font-sans">
         
         {/* Left: Summary & Keypad */}
-        <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col bg-gray-50 border-r border-gray-200">
-          <div className="flex justify-between items-start mb-6">
-            <h2 className="text-xl font-bold text-gray-800">Paiement</h2>
+        <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col bg-gray-50/50 border-r border-gray-100">
+          <div className="flex justify-between items-start mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Paiement</h2>
              <div className="text-right">
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-bold">Total Dû</p>
-                <p className="text-3xl font-extrabold text-gray-900">{total.toLocaleString()} F</p>
+                <p className="text-xs text-gray-400 uppercase tracking-widest font-bold mb-1">Total à Payer</p>
+                <p className="text-4xl font-extrabold text-gray-900 tracking-tight">{total.toLocaleString()} F</p>
              </div>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center">
-             <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 mb-6">
-                 <div className="flex justify-between mb-2">
+          <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
+             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8">
+                 <div className="flex justify-between mb-3">
                      <span className="text-gray-500 font-medium">Déjà payé</span>
-                     <span className="font-bold text-green-600">{totalPaid.toLocaleString()} F</span>
+                     <span className="font-bold text-green-600 text-lg">{totalPaid.toLocaleString()} F</span>
                  </div>
-                 <div className="flex justify-between mb-2">
-                     <span className="text-gray-500 font-medium">Reste</span>
-                     <span className="font-bold text-orange-600">{remaining.toLocaleString()} F</span>
+                 <div className="flex justify-between mb-3">
+                     <span className="text-gray-500 font-medium">Reste à payer</span>
+                     <span className="font-bold text-orange-600 text-lg">{remaining.toLocaleString()} F</span>
                  </div>
-                 <div className="border-t border-gray-100 pt-3 mt-1 flex justify-between">
-                     <span className="text-gray-800 font-bold">Monnaie</span>
-                     <span className="font-extrabold text-gray-900">{change.toLocaleString()} F</span>
+                 <div className="border-t border-gray-100 pt-4 mt-2 flex justify-between items-center">
+                     <span className="text-gray-900 font-bold">Monnaie</span>
+                     <span className="font-extrabold text-2xl text-gray-900">{change.toLocaleString()} F</span>
                  </div>
              </div>
 
-             <div className="mb-2 text-sm font-bold text-gray-500">Montant pour {PAYMENT_METHODS.find(m => m.id === activeMethod)?.name}</div>
-             <input 
-                type="number" 
-                value={payments[activeMethod] || ''}
-                onChange={(e) => handleAmountChange(e.target.value)}
-                placeholder="0"
-                className="w-full text-4xl font-bold p-4 rounded-lg border border-[var(--primary)] focus:outline-none focus:ring-4 focus:ring-[var(--primary)]/20 bg-white text-right mb-4"
-                autoFocus
-             />
+             <div className="mb-3 text-sm font-bold text-gray-500 flex items-center gap-2">
+                <span>Montant en</span>
+                <span className="text-gray-900">{PAYMENT_METHODS.find(m => m.id === activeMethod)?.name}</span>
+             </div>
              
-             <div className="grid grid-cols-4 gap-2 mb-4">
+             <div className="relative mb-6">
+                 <input 
+                    type="number" 
+                    value={payments[activeMethod] || ''}
+                    onChange={(e) => handleAmountChange(e.target.value)}
+                    placeholder="0"
+                    className="w-full text-5xl font-extrabold p-6 rounded-2xl border-2 border-transparent bg-white shadow-sm focus:outline-none focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary)]/10 text-right transition-all"
+                    autoFocus
+                 />
+                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 font-bold text-2xl">FCFA</span>
+             </div>
+             
+             <div className="grid grid-cols-4 gap-3 mb-4">
                  {[1000, 2000, 5000, 10000].map(amt => (
                      <button 
                         key={amt} 
                         onClick={() => handleQuickAmount(amt)}
-                        className="py-3 rounded-lg bg-white border border-gray-200 text-gray-600 hover:border-[var(--primary)] hover:text-[var(--primary)] font-bold transition-colors text-sm"
+                        className="py-3 px-2 rounded-xl bg-white border border-gray-200 text-gray-600 hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[var(--primary)]/5 font-bold transition-all text-sm shadow-sm active:scale-95"
                      >
                          {amt/1000}k
                      </button>
@@ -142,19 +156,19 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
              </div>
              <button 
                 onClick={handleExact}
-                className="w-full py-4 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-900 transition-colors shadow-lg"
+                className="w-full py-4 rounded-xl bg-gray-900 text-white font-bold hover:bg-black transition-colors shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
              >
-                 Montant Exact ({remaining.toLocaleString()} F)
+                 Montant Exact <span className="opacity-60 text-sm font-normal">({remaining.toLocaleString()} F)</span>
              </button>
           </div>
         </div>
 
         {/* Right: Methods & Action */}
-        <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col bg-white">
-            <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-gray-700">Mode de paiement</h3>
-                <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400">
-                    <X size={24} />
+        <div className="w-full md:w-1/2 p-8 md:p-10 flex flex-col bg-white">
+            <div className="flex justify-between items-center mb-8">
+                <h3 className="text-xl font-bold text-gray-800">Mode de paiement</h3>
+                <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
+                    <X size={28} />
                 </button>
             </div>
 
@@ -163,36 +177,48 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
                     <button
                         key={method.id}
                         onClick={() => setActiveMethod(method.id)}
-                        className={`p-6 rounded-xl border flex flex-col items-center justify-center gap-3 transition-all duration-200
+                        className={`p-6 rounded-[24px] border-2 flex flex-col items-center justify-center gap-4 transition-all duration-300 relative overflow-hidden group
                             ${activeMethod === method.id 
-                                ? 'border-[var(--primary)] bg-[var(--primary)]/5 text-[var(--primary)] shadow-md' 
+                                ? 'border-[var(--primary)] bg-[var(--primary)]/5 shadow-md scale-[1.02]' 
                                 : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200 hover:bg-gray-50'
                             }`}
                     >
-                        <div className={`p-3 rounded-full ${activeMethod === method.id ? 'bg-[var(--primary)] text-white' : 'bg-gray-100'}`}>
+                        {/* Selected Indicator */}
+                        {activeMethod === method.id && (
+                            <div className="absolute top-3 right-3 text-[var(--primary)]">
+                                <CheckCircle size={20} fill="currentColor" className="text-white" />
+                            </div>
+                        )}
+
+                        <div className={`w-16 h-16 p-2 rounded-2xl flex items-center justify-center transition-colors ${activeMethod === method.id ? 'bg-white shadow-sm' : 'bg-gray-50 grayscale group-hover:grayscale-0'}`}>
                             {renderIcon(method.id)}
                         </div>
-                        <span className="font-bold">{method.name}</span>
-                        {payments[method.id] > 0 && (
-                            <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                {payments[method.id].toLocaleString()} F
-                            </span>
-                        )}
+                        
+                        <div className="text-center">
+                            <span className={`font-bold block text-lg ${activeMethod === method.id ? 'text-gray-900' : 'text-gray-500'}`}>{method.name}</span>
+                            {payments[method.id] > 0 && (
+                                <span className="inline-block mt-2 text-xs font-bold bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                                    {payments[method.id].toLocaleString()} F
+                                </span>
+                            )}
+                        </div>
                     </button>
                 ))}
             </div>
 
-            <button
-                onClick={processPayment}
-                disabled={totalPaid < total || processing}
-                className={`w-full py-5 rounded-xl text-lg font-bold text-white flex items-center justify-center gap-3 transition-all shadow-lg
-                    ${totalPaid >= total 
-                        ? 'bg-[var(--primary)] hover:opacity-90 active:scale-[0.98]' 
-                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    }`}
-            >
-                {processing ? <Loader2 className="animate-spin" /> : <>Valider le paiement <CheckCircle /></>}
-            </button>
+            <div className="mt-8">
+                <button
+                    onClick={processPayment}
+                    disabled={totalPaid < total || processing}
+                    className={`w-full py-6 rounded-2xl text-xl font-bold text-white flex items-center justify-center gap-3 transition-all shadow-xl
+                        ${totalPaid >= total 
+                            ? 'bg-[var(--primary)] hover:opacity-90 active:scale-[0.98] shadow-[var(--primary)]/30' 
+                            : 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
+                        }`}
+                >
+                    {processing ? <Loader2 className="animate-spin w-8 h-8" /> : 'Confirmer et Imprimer'}
+                </button>
+            </div>
         </div>
       </div>
     </div>

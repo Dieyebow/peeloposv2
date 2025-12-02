@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { usePOS } from '../context/POSContext';
 import { api } from '../services/api';
 import { Product, Variant, CartItem } from '../types';
-import { Search, LogOut, Grid, List, ShoppingCart, Loader2, Zap, Plus, Menu, Bell, Wallet, Package, Layers, ShoppingBag } from 'lucide-react';
+import { Search, LogOut, LayoutGrid, Box, History, Users, Settings, ShoppingCart, Loader2, Bell, Layers } from 'lucide-react';
 
 import VariantModal from './VariantModal';
 import CartSidebar from './CartSidebar';
@@ -90,208 +90,179 @@ export default function POSLayout() {
     setVariantProduct(null);
   };
 
+  const getPriceDisplay = (product: Product) => {
+    if (product.hasVariants && product.variants.length > 0) {
+        const minPrice = Math.min(...product.variants.map(v => v.price));
+        return (
+            <div className="flex flex-col">
+                <span className="text-[10px] text-gray-500 font-medium">À partir de</span>
+                <span className="text-base font-bold text-gray-900">{minPrice.toLocaleString()} F</span>
+            </div>
+        );
+    }
+    return <p className="text-base font-bold text-gray-900">{product.price.toLocaleString()} F</p>;
+  };
+
+  const getProductImage = (product: Product) => {
+    if (product.hasVariants && product.variants && product.variants.length > 0) {
+        const firstVariantImage = product.variants[0].images?.[0];
+        if (firstVariantImage) return firstVariantImage;
+    }
+    return product.images?.[0];
+  };
+
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  if (loading) return <div className="h-screen w-full flex items-center justify-center bg-[#eaeaec]"><Loader2 className="animate-spin text-[var(--primary)]" /></div>;
+  if (loading) return <div className="h-screen w-full flex items-center justify-center bg-[#f3f4f6]"><Loader2 className="animate-spin text-[var(--primary)]" /></div>;
+
+  const categories = ['all', ...Array.from(new Set(products.map(p => p.category)))];
 
   return (
-    <div className="flex flex-col h-screen w-full bg-[#f8f9fa] overflow-hidden font-sans text-slate-900">
+    <div className="flex h-screen w-full bg-[#f3f4f6] overflow-hidden font-sans text-slate-800">
       
-      {/* 1. TOP NAVBAR */}
-      <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between shrink-0 z-40 sticky top-0">
-         <div className="flex items-center gap-6">
-             <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-600">
-                 <Menu size={24} />
-             </button>
-             <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
-         </div>
+      {/* 1. DARK SIDEBAR (Fixed Left) */}
+      <aside className="hidden md:flex w-20 bg-[#1a1c1e] flex-col items-center py-8 gap-8 shrink-0 z-50">
+          <div className="w-10 h-10 rounded-xl bg-[var(--primary)] flex items-center justify-center text-white font-semibold shadow-lg shadow-[var(--primary)]/30">
+              <img src="/logo-placeholder.png" onError={(e) => e.currentTarget.style.display = 'none'} alt="" className="w-6 h-6" />
+              <div className="w-6 h-6 border-2 border-white rounded-full"></div>
+          </div>
 
-         {/* Centered Search */}
-         <div className="hidden md:flex flex-1 max-w-xl mx-auto relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[var(--primary)] transition-colors" size={18} />
-              <input 
-                  type="text" 
-                  placeholder="Rechercher un produit..." 
-                  className="w-full bg-gray-100 pl-11 pr-4 py-2.5 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:bg-white transition-all border border-transparent"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-              />
-         </div>
+          <nav className="flex flex-col gap-6 w-full items-center">
+              <button className="p-3 rounded-xl bg-[var(--primary)] text-white shadow-md">
+                  <LayoutGrid size={24} />
+              </button>
+              <button className="p-3 rounded-xl text-gray-500 hover:bg-white/10 hover:text-white transition-colors">
+                  <Box size={24} />
+              </button>
+              <button className="p-3 rounded-xl text-gray-500 hover:bg-white/10 hover:text-white transition-colors">
+                  <History size={24} />
+              </button>
+          </nav>
 
-         <div className="flex items-center gap-4">
-             <button className="relative p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors">
-                 <Bell size={20} />
-                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-             </button>
-             <div className="h-8 w-[1px] bg-gray-200 mx-1"></div>
-             <button onClick={handleLogout} className="flex items-center gap-2 hover:bg-gray-50 p-1.5 rounded-xl transition-colors">
-                 <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center text-[var(--primary)] font-bold">
-                     {cashier?.name.charAt(0)}
-                 </div>
-             </button>
-         </div>
-      </header>
+          <div className="mt-auto flex flex-col gap-6 w-full items-center">
+              <button onClick={handleLogout} className="p-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors">
+                  <LogOut size={24} />
+              </button>
+          </div>
+      </aside>
 
-      {/* 2. MAIN LAYOUT (Content + Cart) */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* 2. MAIN CONTENT (Center) */}
+      <main className="flex-1 flex flex-col min-w-0 h-full relative">
         
-        {/* LEFT: Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-            <div className="max-w-7xl mx-auto space-y-8">
-                
-                {/* Dashboard Widgets Row */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Welcome / Active Cashier Card */}
-                    <div className="lg:col-span-1 bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden flex flex-col justify-between h-48">
-                         <div className="relative z-10">
-                             <p className="text-white/80 font-medium mb-1">Caisse ouverte</p>
-                             <h2 className="text-2xl font-bold">{cashier?.name}</h2>
-                         </div>
-                         <div className="relative z-10 flex items-center gap-3 bg-white/10 w-fit px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                             <span className="text-xs font-bold">En ligne</span>
-                         </div>
-                         {/* Decorative circles */}
-                         <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
-                         <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-black/10 rounded-full blur-xl"></div>
-                    </div>
+        {/* Header */}
+        <header className="px-8 py-6 flex items-center justify-between bg-[#f3f4f6] shrink-0">
+             <div>
+                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Créer une Transaction</h1>
+             </div>
 
-                    {/* Stats Grid */}
-                    <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center gap-3">
-                             <div className="p-3 bg-green-50 text-green-600 rounded-xl">
-                                 <ShoppingBag size={24} />
-                             </div>
-                             <div>
-                                 <p className="text-2xl font-bold text-gray-900">0</p>
-                                 <p className="text-xs text-gray-500 font-medium">Ventes du jour</p>
-                             </div>
-                        </div>
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center gap-3">
-                             <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                                 <Wallet size={24} />
-                             </div>
-                             <div>
-                                 <p className="text-2xl font-bold text-gray-900">0 F</p>
-                                 <p className="text-xs text-gray-500 font-medium">CA Aujourd'hui</p>
-                             </div>
-                        </div>
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center gap-3">
-                             <div className="p-3 bg-orange-50 text-orange-600 rounded-xl">
-                                 <Package size={24} />
-                             </div>
-                             <div>
-                                 <p className="text-2xl font-bold text-gray-900">{products.length}</p>
-                                 <p className="text-xs text-gray-500 font-medium">Produits</p>
-                             </div>
-                        </div>
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center gap-3">
-                             <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
-                                 <Layers size={24} />
-                             </div>
-                             <div>
-                                 <p className="text-2xl font-bold text-gray-900">
-                                     {new Set(products.map(p => p.category)).size}
-                                 </p>
-                                 <p className="text-xs text-gray-500 font-medium">Catégories</p>
-                             </div>
-                        </div>
-                    </div>
-                </div>
+             <div className="flex items-center gap-4">
+                 <div className="relative">
+                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                     <input 
+                        type="text" 
+                        placeholder="Rechercher..." 
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-10 pr-4 py-2.5 bg-white rounded-full text-sm border-none shadow-sm focus:ring-2 focus:ring-[var(--primary)] w-64 font-medium"
+                     />
+                 </div>
+                 <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+                     <div className="text-right hidden sm:block">
+                         <p className="text-sm font-bold text-gray-900">{cashier?.name}</p>
+                         <p className="text-xs text-gray-400 font-medium">Caissier</p>
+                     </div>
+                     <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-white shadow-sm">
+                         <img 
+                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(cashier?.name || '')}&background=random`} 
+                            alt="Profile" 
+                            className="w-full h-full object-cover" 
+                         />
+                     </div>
+                 </div>
+             </div>
+        </header>
 
-                {/* Categories & Products Section */}
-                <div>
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-bold text-gray-800">Produits Recommandés</h3>
-                        <button className="text-[var(--primary)] text-sm font-bold hover:underline">Tout voir</button>
-                    </div>
+        {/* Filters & Grid */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-8">
+            
+            {/* Category Pills */}
+            <div className="flex gap-3 mb-8 overflow-x-auto no-scrollbar py-1">
+                {categories.map(cat => (
+                    <button
+                        key={cat}
+                        onClick={() => setActiveCategory(cat)}
+                        className={`px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all shadow-sm flex items-center gap-2
+                            ${activeCategory === cat 
+                                ? 'bg-[var(--primary)] text-white shadow-md shadow-[var(--primary)]/20' 
+                                : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+                    >
+                        <span className="capitalize">{cat === 'all' ? 'Tous les produits' : cat}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeCategory === cat ? 'bg-black/20 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                            {cat === 'all' ? products.length : products.filter(p => p.category === cat).length}
+                        </span>
+                    </button>
+                ))}
+            </div>
 
-                    {/* Category Filter Pills */}
-                    <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 mb-4">
-                         <button 
-                            onClick={() => setActiveCategory('all')}
-                            className={`px-6 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all border
-                                ${activeCategory === 'all' 
-                                    ? 'bg-[var(--accent)] text-white border-[var(--accent)] shadow-lg shadow-orange-200' 
-                                    : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50'}`}
+            {/* Products Grid - EXACT NIKE STYLE */}
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map(product => {
+                    const imgUrl = getProductImage(product);
+                    return (
+                        <div 
+                            key={product._id} 
+                            onClick={() => handleProductClick(product)}
+                            className="bg-white rounded-[24px] p-3 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col cursor-pointer"
                         >
-                            Tout
-                        </button>
-                        {Array.from(new Set(products.map(p => p.category))).map(cat => (
-                             <button 
-                             key={cat}
-                             onClick={() => setActiveCategory(cat)}
-                             className={`px-6 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all border
-                                 ${activeCategory === cat
-                                     ? 'bg-white border-[var(--primary)] text-[var(--primary)] ring-2 ring-[var(--primary)]/10' 
-                                     : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50'}`}
-                         >
-                             {cat}
-                         </button>
-                        ))}
-                    </div>
-
-                    {/* Products Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6 pb-20">
-                        {filteredProducts.map(product => (
-                            <div 
-                                key={product._id} 
-                                onClick={() => handleProductClick(product)}
-                                className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border border-gray-100 group flex flex-col"
-                            >
-                                <div className="aspect-square rounded-xl bg-gray-50 mb-4 overflow-hidden relative">
-                                     {product.images[0] ? (
-                                        <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                            <Package size={32} />
-                                        </div>
-                                    )}
-                                    {/* Stock Tag */}
-                                    <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] font-bold text-gray-800 shadow-sm border border-gray-100">
-                                        {product.stock} en stock
+                            {/* Image Container */}
+                            <div className="relative aspect-square rounded-[20px] bg-[#f8f9fa] mb-4 overflow-hidden">
+                                {imgUrl ? (
+                                    <img src={imgUrl} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                        <Box size={32} />
                                     </div>
-                                </div>
+                                )}
                                 
-                                <div className="flex-1 flex flex-col">
-                                    <h4 className="font-bold text-gray-900 text-sm line-clamp-2 leading-tight mb-1 group-hover:text-[var(--primary)] transition-colors">
-                                        {product.title}
-                                    </h4>
-                                    <p className="text-xs text-gray-400 mb-3">{product.category}</p>
-                                    
-                                    <div className="mt-auto flex items-center justify-between">
-                                        <span className="text-lg font-extrabold text-gray-900">
-                                            {product.price.toLocaleString()} F
-                                        </span>
-                                        <button className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center group-hover:bg-[var(--primary)] group-hover:text-white transition-colors">
-                                            <Plus size={16} strokeWidth={3} />
-                                        </button>
+                                {/* Stock Badge (Black Pill) */}
+                                <div className="absolute top-3 left-3 bg-black px-3 py-1.5 rounded-full text-[10px] font-bold text-white z-10 shadow-sm">
+                                    {product.stock} Stock
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="px-1 flex-1 flex flex-col">
+                                <h3 className="font-bold text-gray-900 text-base line-clamp-1 mb-1">{product.title}</h3>
+                                <p className="text-xs text-gray-400 mb-4 line-clamp-2 font-medium">{product.description || 'Produit sans description'}</p>
+                                
+                                <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-3">
+                                    {getPriceDisplay(product)}
+                                    <div className="flex items-center gap-1 text-[var(--primary)] text-xs font-bold uppercase cursor-pointer hover:underline">
+                                        <ShoppingCart size={14} /> <span>Ajouter</span>
                                     </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
+                        </div>
+                    );
+                })}
             </div>
         </div>
 
-        {/* RIGHT: Fixed Cart Sidebar */}
-        <div className={`
+      </main>
+
+      {/* 3. CART SIDEBAR (Fixed Right) */}
+      <aside className={`
             fixed inset-y-0 right-0 z-50 w-full sm:w-[400px] bg-white border-l border-gray-200 shadow-2xl transform transition-transform duration-300 lg:relative lg:transform-none lg:w-[420px] lg:shadow-none lg:block
             ${mobileCartOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
         `}>
-            <CartSidebar onPay={() => setShowPayment(true)} />
-            
-             {/* Mobile Close Button */}
+             <CartSidebar onPay={() => setShowPayment(true)} />
              <button 
                 onClick={() => setMobileCartOpen(false)} 
                 className="lg:hidden absolute top-4 right-4 p-2 bg-gray-100 rounded-full text-gray-500"
             >
                 <LogOut className="rotate-180" size={20} />
             </button>
-        </div>
-
-      </div>
+      </aside>
 
       {/* Modals */}
       {variantProduct && (
@@ -320,7 +291,7 @@ export default function POSLayout() {
           />
       )}
       
-      {/* Mobile Cart Toggle Fab */}
+      {/* Mobile Cart Toggle */}
       <button 
          onClick={() => setMobileCartOpen(true)}
          className="fixed bottom-6 right-6 lg:hidden z-40 bg-[var(--primary)] text-white p-4 rounded-full shadow-xl flex items-center gap-2"
@@ -329,7 +300,7 @@ export default function POSLayout() {
           {cart.length > 0 && <span className="font-bold">{cart.length}</span>}
       </button>
 
-      {/* Mobile Backdrop for Cart */}
+      {/* Mobile Backdrop */}
       {mobileCartOpen && (
           <div className="fixed inset-0 bg-black/20 z-30 lg:hidden backdrop-blur-sm" onClick={() => setMobileCartOpen(false)} />
       )}
