@@ -62,19 +62,14 @@ export default function CartSidebar({ onPay }: Props) {
                 </div>
                 
                 {/* Info */}
-                <div className="flex-1 pt-0.5">
-                    <h4 className="font-semibold text-gray-900 text-sm mb-2 pr-8 leading-tight line-clamp-2">{item.name}</h4>
+                <div className="flex-1 pt-1">
+                    <h4 className="font-bold text-gray-900 text-sm mb-1.5 pr-8 leading-tight line-clamp-1">{item.name}</h4>
                     
                     {/* Variant Pill */}
                     <div className="flex flex-wrap gap-2 mb-3">
-                        <span className="text-[10px] text-gray-500 bg-gray-50 border border-gray-100 px-2 py-1 rounded-full font-medium">
+                        <span className="text-[11px] text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full font-medium tracking-wide">
                             {item.variant || 'Standard'}
                         </span>
-                        {item.variant && (
-                           <span className="text-[10px] text-gray-400 flex items-center gap-1 px-1 font-medium">
-                              • {item.variant}
-                           </span>
-                        )}
                     </div>
 
                     {/* Bottom Row: Qty & Price */}
@@ -86,7 +81,7 @@ export default function CartSidebar({ onPay }: Props) {
                             >
                                 <Minus size={12} strokeWidth={2.5} />
                             </button>
-                            <span className="font-semibold text-gray-900 w-5 text-center text-sm">{item.quantity.toString().padStart(2, '0')}</span>
+                            <span className="font-bold text-gray-900 w-5 text-center text-sm">{item.quantity.toString().padStart(2, '0')}</span>
                             <button 
                                 onClick={() => updateQuantity(item.key, 1)}
                                 className="w-7 h-7 rounded-full bg-[var(--primary)] text-white flex items-center justify-center hover:opacity-90 transition-colors shadow-md shadow-[var(--primary)]/20"

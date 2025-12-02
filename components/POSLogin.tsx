@@ -131,7 +131,8 @@ export default function POSLogin() {
 
   const getAvatarUrl = (c: Cashier) => {
     if (c.avatar) return c.avatar;
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random&color=fff&size=128&bold=true&rounded=true`;
+    // Removed rounded=true to ensure square shape
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random&color=fff&size=128&bold=true`;
   };
 
   if (loading) return (
@@ -152,7 +153,7 @@ export default function POSLogin() {
           >
               <div className="absolute inset-0 bg-black/5 pattern-grid-lg opacity-10"></div>
               
-              <div className="relative z-10 flex flex-col items-center animate-in slide-in-from-left-10 duration-700 fade-in">
+              <div className="relative z-10 flex flex-col items-center animate-in slide-in-from-left-10 duration-700 fade-in text-center">
                   <div className="w-48 h-48 bg-white rounded-full p-2 shadow-2xl mb-8 flex items-center justify-center ring-8 ring-white/10">
                       {shop?.logo ? (
                           <img src={shop.logo} alt={shop.name} className="w-full h-full object-cover rounded-full" />
@@ -162,8 +163,8 @@ export default function POSLogin() {
                           </div>
                       )}
                   </div>
-                  <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center tracking-tight">{shop?.name || 'Peelo POS'}</h1>
-                  <p className="text-xl opacity-90 text-center font-medium max-w-md">{shop?.description || 'Bienvenue sur votre terminal de vente.'}</p>
+                  <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">{shop?.name || 'Peelo POS'}</h1>
+                  <p className="text-xl opacity-90 font-medium max-w-md">{shop?.description || 'Bienvenue sur votre terminal de vente.'}</p>
               </div>
 
               {/* Footer Info */}
@@ -191,14 +192,15 @@ export default function POSLogin() {
                              <p className="text-gray-500">Veuillez sélectionner votre profil pour commencer.</p>
                          </div>
                          
-                         <div className="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                         <div className="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2 pt-3">
                              {cashiers.map(c => (
                                  <button
                                      key={c._id}
                                      onClick={() => setSelectedCashier(c)}
                                      className="w-full flex items-center gap-4 p-4 rounded-2xl border border-gray-100 bg-white hover:border-[var(--secondary)] hover:bg-[var(--secondary)]/5 hover:shadow-lg transition-all duration-200 group text-left"
                                  >
-                                     <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-200 group-hover:border-[var(--secondary)] transition-colors">
+                                     {/* Fixed: Square Avatar with rounded-md instead of rounded-xl */}
+                                     <div className="w-14 h-14 rounded-md bg-gray-100 overflow-hidden shrink-0 border border-gray-200 group-hover:border-[var(--secondary)] transition-colors">
                                          <img src={getAvatarUrl(c)} className="w-full h-full object-cover" />
                                      </div>
                                      <div className="flex-1">
@@ -215,14 +217,18 @@ export default function POSLogin() {
                  ) : (
                      <div className="animate-in zoom-in-95 duration-300">
                          <button 
-                             onClick={() => setSelectedCashier(null)}
-                             className="mb-8 flex items-center gap-2 text-gray-400 hover:text-gray-900 transition-colors font-medium"
+                             onClick={() => {
+                                 setSelectedCashier(null);
+                                 setPin('');
+                                 setError('');
+                             }}
+                             className="mb-8 flex items-center gap-2 text-gray-400 hover:text-gray-900 transition-colors font-medium relative z-20"
                          >
                              <ArrowLeft size={18} /> Retour
                          </button>
 
                          <div className="text-center mb-8">
-                             <div className="w-24 h-24 rounded-2xl mx-auto mb-4 overflow-hidden shadow-xl ring-4 ring-gray-50">
+                             <div className="w-24 h-24 rounded-md mx-auto mb-4 overflow-hidden shadow-xl ring-4 ring-gray-50">
                                  <img src={getAvatarUrl(selectedCashier)} className="w-full h-full object-cover" />
                              </div>
                              <h3 className="text-2xl font-bold text-gray-900">Bonjour, {selectedCashier.name.split(' ')[0]}</h3>
@@ -286,7 +292,7 @@ export default function POSLogin() {
              </div>
              
              {/* Mobile Dev Switcher */}
-             <div className="absolute bottom-4 right-4">
+             <div className="absolute bottom-4 right-4 z-50">
                  <select 
                    value={chatbotId} 
                    onChange={handleSwitchBot}

@@ -95,12 +95,12 @@ export default function POSLayout() {
         const minPrice = Math.min(...product.variants.map(v => v.price));
         return (
             <div className="flex flex-col">
-                <span className="text-[10px] text-gray-500 font-medium">À partir de</span>
-                <span className="text-base font-bold text-gray-900">{minPrice.toLocaleString()} F</span>
+                <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">À partir de</span>
+                <span className="text-lg font-bold text-gray-900">{minPrice.toLocaleString()} F</span>
             </div>
         );
     }
-    return <p className="text-base font-bold text-gray-900">{product.price.toLocaleString()} F</p>;
+    return <p className="text-lg font-bold text-gray-900">{product.price.toLocaleString()} F</p>;
   };
 
   const getProductImage = (product: Product) => {
@@ -212,7 +212,7 @@ export default function POSLayout() {
                         <div 
                             key={product._id} 
                             onClick={() => handleProductClick(product)}
-                            className="bg-white rounded-[24px] p-3 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col cursor-pointer"
+                            className="bg-white rounded-[24px] p-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col cursor-pointer border border-transparent hover:border-gray-100"
                         >
                             {/* Image Container */}
                             <div className="relative aspect-square rounded-[20px] bg-[#f8f9fa] mb-4 overflow-hidden">
@@ -225,21 +225,18 @@ export default function POSLayout() {
                                 )}
                                 
                                 {/* Stock Badge (Black Pill) */}
-                                <div className="absolute top-3 left-3 bg-black px-3 py-1.5 rounded-full text-[10px] font-bold text-white z-10 shadow-sm">
+                                <div className="absolute top-3 left-3 bg-black/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold text-white z-10 shadow-sm">
                                     {product.stock} Stock
                                 </div>
                             </div>
 
                             {/* Content */}
-                            <div className="px-1 flex-1 flex flex-col">
+                            <div className="flex-1 flex flex-col">
                                 <h3 className="font-bold text-gray-900 text-base line-clamp-1 mb-1">{product.title}</h3>
                                 <p className="text-xs text-gray-400 mb-4 line-clamp-2 font-medium">{product.description || 'Produit sans description'}</p>
                                 
-                                <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-3">
+                                <div className="mt-auto">
                                     {getPriceDisplay(product)}
-                                    <div className="flex items-center gap-1 text-[var(--primary)] text-xs font-bold uppercase cursor-pointer hover:underline">
-                                        <ShoppingCart size={14} /> <span>Ajouter</span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
