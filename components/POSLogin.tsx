@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { usePOS } from '../context/POSContext';
 import { Cashier } from '../types';
-import { User, Delete, Loader2, Grip, ArrowLeft, ChevronDown, ShieldCheck } from 'lucide-react';
+import { Loader2, ArrowLeft, ChevronDown, Monitor, Delete, ShoppingBag, Store } from 'lucide-react';
 
 const TEST_BOTS = [
   { id: '69177048073213c297170052', name: 'Boutique 1' },
@@ -90,7 +90,6 @@ export default function POSLogin() {
     setError('');
     
     if (val.length === 4 && selectedCashier) {
-      // Small delay to let the UI update
       setTimeout(() => submitLogin(val), 300);
     }
   };
@@ -104,7 +103,6 @@ export default function POSLogin() {
         setTimeout(() => submitLogin(newPin), 300);
       }
     }
-    // Keep focus on input to allow continuous typing/pasting
     inputRef.current?.focus();
   };
 
@@ -136,226 +134,186 @@ export default function POSLogin() {
 
   const getAvatarUrl = (c: Cashier) => {
     if (c.avatar) return c.avatar;
-    // Removed rounded=true to ensure square avatars as requested
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random&color=fff&size=128&bold=true`;
   };
 
   if (loading) return (
-    <div className="flex h-screen w-full items-center justify-center bg-[var(--primary)] flex-col gap-4 text-white">
-      <Loader2 className="animate-spin h-10 w-10 text-white/80" />
-      <p className="text-sm font-medium text-white/80">Chargement...</p>
+    <div className="flex h-screen w-full items-center justify-center bg-[#eaeaec] flex-col gap-4">
+      <Loader2 className="animate-spin h-10 w-10 text-[var(--primary)]" />
     </div>
   );
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center p-0 md:p-6 lg:p-8 font-sans">
+    <div className="fixed inset-0 w-full h-full bg-[#eaeaec] flex items-center justify-center p-4 md:p-8 font-sans">
       
-      {/* Background Ambience */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[60vh] h-[60vh] rounded-full bg-white/10 blur-3xl mix-blend-overlay" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[50vh] h-[50vh] rounded-full bg-black/20 blur-3xl mix-blend-overlay" />
-      </div>
-
-      {/* Main Card Container */}
-      <div className="relative z-10 w-full max-w-6xl h-full md:h-[85vh] bg-white md:rounded-xl shadow-2xl flex overflow-hidden border border-white/20">
+      {/* Main Container */}
+      <div className="w-full max-w-[1400px] h-full md:h-[90vh] bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row border border-gray-200">
         
-        {/* LEFT PANEL: Cashier List */}
-        <div className={`
-          flex-col w-full md:w-7/12 lg:w-3/5 bg-slate-50 p-6 md:p-10 transition-all duration-300 absolute md:relative inset-0 md:inset-auto z-10
-          ${selectedCashier ? '-translate-x-full opacity-0 md:translate-x-0 md:opacity-100 hidden md:flex' : 'translate-x-0 opacity-100 flex'}
-        `}>
+        {/* LEFT PANEL: Shop Branding */}
+        <div className="w-full md:w-[45%] bg-slate-50 relative overflow-hidden order-2 md:order-1 flex flex-col p-10 md:p-16 border-r border-gray-100">
           
-          {/* Header */}
-          <div className="flex justify-between items-start shrink-0">
-             <div className="flex items-center gap-4">
-                {shop?.logo ? (
-                  <img src={shop.logo} alt={shop.name} className="h-10 md:h-14 w-auto object-contain" />
-                ) : (
-                  <div className="flex flex-col">
-                      <span className="text-3xl md:text-4xl font-extrabold tracking-tighter text-[var(--primary)]">Peelo</span>
-                      {shop?.name && <span className="text-[10px] text-[var(--secondary)] font-bold uppercase tracking-widest ml-0.5 opacity-80">{shop.name}</span>}
-                  </div>
-                )}
+          <div className="relative z-10 flex flex-col h-full justify-center items-start text-left">
+             {/* Shop Logo / Name */}
+             <div className="mb-8">
+               {shop?.logo ? (
+                 <img src={shop.logo} alt={shop.name} className="h-24 md:h-32 object-contain rounded-xl" />
+               ) : (
+                 <div className="h-24 w-24 md:h-32 md:w-32 bg-[var(--primary)] rounded-2xl flex items-center justify-center text-white shadow-lg mb-4">
+                    <Store size={48} />
+                 </div>
+               )}
+               {(!shop?.logo) && <h1 className="text-4xl font-extrabold text-gray-900 mt-4 tracking-tight">{shop?.name || 'Ma Boutique'}</h1>}
              </div>
 
-             {/* Debug Selector */}
-             <div className="relative z-10 opacity-30 hover:opacity-100 transition-opacity bg-white px-2 py-1 rounded border border-gray-200">
+             {/* Description */}
+             <div className="max-w-md">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                  {shop?.name ? `Bienvenue chez ${shop.name}` : 'Bienvenue'}
+                </h1>
+                <p className="text-lg text-gray-500 font-medium leading-relaxed">
+                  {shop?.description || "Connectez-vous pour commencer à encaisser vos clients et gérer vos ventes."}
+                </p>
+             </div>
+          </div>
+
+          {/* Bottom Info */}
+          <div className="mt-auto pt-12 relative z-10 hidden md:flex items-center justify-between w-full border-t border-gray-200/50">
+             <div className="flex items-center gap-2 text-[var(--primary)] font-bold text-xs uppercase tracking-wider">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                Terminal Connecté
+             </div>
+             <div className="relative inline-block">
                 <select 
                   value={chatbotId} 
                   onChange={handleSwitchBot}
-                  className="appearance-none bg-transparent text-[#020202] text-xs font-mono cursor-pointer focus:outline-none pr-4"
+                  className="appearance-none bg-transparent text-gray-400 text-xs font-bold cursor-pointer focus:outline-none hover:text-[var(--primary)] transition-colors text-right"
                 >
                   {TEST_BOTS.map(bot => (
                     <option key={bot.id} value={bot.id}>{bot.name}</option>
                   ))}
-                  <option value={chatbotId}>Actuel</option>
                 </select>
-                <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={10} />
-              </div>
-          </div>
-
-          <div className="flex-1 flex flex-col pt-12 md:pt-16 min-h-0">
-            <div className="mb-6 pl-1 shrink-0">
-                {/* Softened the black color here as requested */}
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Qui se connecte ?</h2>
-                <p className="text-gray-500 mt-2 text-sm md:text-base">Sélectionnez votre profil pour accéder à la caisse.</p>
-            </div>
-
-            {/* Cashier Grid - Scrollable area */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2 pb-4 pl-1 pt-3">
-                {cashiers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-48 text-gray-400 border border-dashed border-gray-200 rounded-lg bg-white">
-                    <User size={32} className="mb-3 opacity-40" />
-                    <p>Aucun caissier actif.</p>
-                </div>
-                ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
-                    {cashiers.map(c => (
-                    <button
-                        key={c._id}
-                        onClick={() => {
-                        setSelectedCashier(c);
-                        setPin('');
-                        setError('');
-                        }}
-                        className={`p-4 rounded-xl flex items-center text-left gap-4 transition-all duration-200 relative group w-full border
-                        ${selectedCashier?._id === c._id 
-                            ? 'bg-white shadow-lg ring-1 ring-black/5 z-10 border-transparent' 
-                            : 'bg-white shadow-sm hover:shadow-md hover:border-[var(--secondary)]/30 border-transparent'
-                        }`}
-                    >
-                        <div className="relative shrink-0">
-                            <div className="h-14 w-14 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                            <img 
-                                src={getAvatarUrl(c)} 
-                                alt={c.name} 
-                                className="h-full w-full object-cover" 
-                            />
-                            </div>
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                            <span className={`font-bold text-sm truncate w-full transition-colors ${selectedCashier?._id === c._id ? 'text-[var(--primary)]' : 'text-gray-700 group-hover:text-[var(--primary)]'}`}>
-                                {c.name}
-                            </span>
-                            <span className={`text-[10px] font-bold uppercase tracking-wider ${selectedCashier?._id === c._id ? 'text-[var(--secondary)]' : 'text-gray-400'}`}>
-                            {c.role === 'cashier' ? 'Caissier' : c.role}
-                            </span>
-                        </div>
-                    </button>
-                    ))}
-                </div>
-                )}
-            </div>
+             </div>
           </div>
         </div>
 
-        {/* RIGHT PANEL: PIN Input */}
-        <div className={`
-            flex-col w-full md:w-5/12 lg:w-2/5 bg-white p-6 md:p-10 relative z-20 shadow-[-10px_0_30px_-5px_rgba(0,0,0,0.05)]
-            transition-all duration-300 absolute md:relative inset-0 md:inset-auto flex
-            ${selectedCashier ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 md:translate-x-0 md:opacity-100 pointer-events-none md:pointer-events-auto'}
-        `}>
-          
-          {selectedCashier ? (
-             <div className="h-full flex flex-col justify-center items-center w-full max-w-[320px] mx-auto animate-in fade-in slide-in-from-right-8 duration-300">
-                
-                {/* Mobile Back Button */}
+        {/* RIGHT PANEL: Interaction */}
+        <div className="flex-1 bg-white p-6 md:p-12 flex flex-col items-center justify-center relative order-1 md:order-2">
+           
+           {/* Header Logo (Peelo) */}
+           <div className="absolute top-8 md:top-12 flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#114232] rounded-lg flex items-center justify-center shadow-lg transform -rotate-3">
+                  <ShoppingBag className="text-white w-5 h-5" strokeWidth={2.5} />
+              </div>
+              <h2 className="text-3xl font-bold text-[#114232] tracking-tight">Peelo</h2>
+           </div>
+
+           {/* Content */}
+           {!selectedCashier ? (
+             <div className="w-full max-w-2xl text-center animate-in fade-in duration-500 mt-16 md:mt-0">
+                 <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Bon après-midi.</h3>
+                 <p className="text-gray-400 mb-12 text-sm font-medium">Qui prend la caisse aujourd'hui ?</p>
+
+                 {/* Cashier Grid */}
+                 <div className="flex flex-wrap justify-center gap-6">
+                    {cashiers.map(c => (
+                        <button 
+                            key={c._id}
+                            onClick={() => setSelectedCashier(c)}
+                            className="group flex flex-col items-center gap-3 p-4 rounded-2xl hover:bg-gray-50/80 transition-all duration-200 w-32 md:w-40 border border-transparent hover:border-gray-100"
+                        >
+                            <div className="relative">
+                                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                                    <img src={getAvatarUrl(c)} alt={c.name} className="w-full h-full object-cover" />
+                                </div>
+                            </div>
+                            <div className="text-center">
+                                <p className="font-bold text-gray-800 text-sm group-hover:text-[#114232] transition-colors">{c.name.split(' ')[0]}</p>
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mt-1">
+                                    {c.role === 'cashier' ? 'GÉRANT' : c.role}
+                                </p>
+                            </div>
+                        </button>
+                    ))}
+                 </div>
+             </div>
+           ) : (
+             <div className="w-full max-w-[320px] text-center animate-in fade-in slide-in-from-right-8 duration-300 mt-16 md:mt-0">
                 <button 
-                  onClick={() => setSelectedCashier(null)}
-                  className="md:hidden absolute top-6 left-6 p-2 bg-gray-50 rounded-full text-gray-600 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                  onClick={() => { setSelectedCashier(null); setPin(''); setError(''); }}
+                  className="absolute top-8 left-8 md:top-12 md:left-12 p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-colors"
                 >
-                  <ArrowLeft size={20} />
+                  <ArrowLeft size={24} />
                 </button>
 
-                <div className="text-center mb-8 w-full">
-                  {/* Selected User Avatar Small - Removed borders as requested */}
-                  <div className="h-16 w-16 rounded-xl mx-auto mb-3 bg-white shadow-sm relative">
-                       <img src={getAvatarUrl(selectedCashier)} className="h-full w-full rounded-lg object-cover" alt={selectedCashier.name} />
-                       <div className="absolute -bottom-1 -right-1 bg-[var(--primary)] border-2 border-white rounded-full p-1 text-white">
-                           <ShieldCheck size={10} />
-                       </div>
-                  </div>
-
-                  {/* Softened the black here too */}
-                  <h3 className="text-xl font-bold text-gray-800">Bon retour</h3>
-                  <p className="text-[var(--secondary)] text-sm font-medium">{selectedCashier.name}</p>
+                <div className="w-24 h-24 rounded-2xl overflow-hidden mx-auto mb-6 shadow-lg">
+                    <img src={getAvatarUrl(selectedCashier)} className="w-full h-full object-cover" />
                 </div>
+                
+                <h3 className="text-2xl font-bold text-gray-800 mb-1">Bonjour, {selectedCashier.name.split(' ')[0]}</h3>
+                <p className="text-gray-400 text-sm mb-8 font-medium">Entrez votre code PIN</p>
 
-                {/* PIN Boxes & Hidden Input for Paste */}
-                <div className="relative w-full mb-6 group">
-                  <input
+                {/* Hidden Input */}
+                <input
                     ref={inputRef}
                     type="text"
                     inputMode="numeric"
-                    pattern="[0-9]*"
-                    autoComplete="one-time-code"
                     maxLength={4}
                     value={pin}
                     onChange={handleInputChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20 caret-transparent"
+                    className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
                     autoFocus
-                  />
-                  <div className="flex gap-3 justify-center w-full pointer-events-none">
+                />
+
+                {/* PIN Display */}
+                <div className="flex justify-center gap-4 mb-8" onClick={() => inputRef.current?.focus()}>
                     {[0, 1, 2, 3].map(i => (
                       <div key={i} className={`
-                        w-12 h-14 rounded-lg border flex items-center justify-center text-2xl font-bold transition-all duration-200
+                        w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold transition-all duration-200
                         ${i < pin.length
-                          ? 'border-[var(--primary)] bg-[var(--primary)] text-white shadow-lg scale-105' 
-                          : 'border-gray-200 bg-gray-50 text-transparent'}
-                        ${error ? 'border-red-500 text-red-500 animate-pulse bg-red-50' : ''}
+                          ? 'bg-[#114232] text-white shadow-lg shadow-[#114232]/20 scale-105' 
+                          : 'bg-white text-transparent border border-gray-200'}
+                        ${error ? 'bg-red-50 border-red-200 animate-shake' : ''}
                       `}>
-                        •
+                        {i < pin.length ? '●' : ''}
                       </div>
                     ))}
-                  </div>
                 </div>
-                
-                {error && (
-                    <div className="mb-4 bg-red-50 text-red-600 px-3 py-1.5 rounded-md text-sm font-medium animate-bounce text-center w-full border border-red-100">
-                        {error}
-                    </div>
-                )}
 
-                {/* Numpad */}
-                <div className="grid grid-cols-3 gap-3 w-full">
+                {error && <p className="text-red-500 text-sm font-bold mb-4 animate-bounce">{error}</p>}
+
+                {/* Custom Numpad */}
+                <div className="grid grid-cols-3 gap-3">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
                     <button
                       key={num}
                       onClick={() => handlePinInput(num.toString())}
-                      className="h-12 w-full rounded-lg bg-gray-50 hover:bg-white text-lg font-bold text-gray-800 hover:text-[var(--primary)] hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:bg-gray-100 transition-all border border-transparent hover:border-[var(--primary)]/20"
+                      className="h-16 w-full rounded-xl bg-white border border-gray-100 text-xl font-bold text-gray-800 hover:bg-gray-50 transition-all duration-100 active:scale-95 shadow-sm"
                     >
                       {num}
                     </button>
                   ))}
-                  <div className="opacity-0 pointer-events-none">.</div>
+                  <div className="opacity-0"></div>
                   <button
                     onClick={() => handlePinInput('0')}
-                    className="h-12 w-full rounded-lg bg-gray-50 hover:bg-white text-lg font-bold text-gray-800 hover:text-[var(--primary)] hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:bg-gray-100 transition-all border border-transparent hover:border-[var(--primary)]/20"
+                    className="h-16 w-full rounded-xl bg-white border border-gray-100 text-xl font-bold text-gray-800 hover:bg-gray-50 transition-all duration-100 active:scale-95 shadow-sm"
                   >
                     0
                   </button>
                   <button
                     onClick={handleBackspace}
-                    className="h-12 w-full rounded-lg bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 active:bg-red-100 transition-all flex items-center justify-center border border-transparent"
+                    className="h-16 w-full rounded-xl bg-white border border-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all duration-100 active:scale-95 shadow-sm flex items-center justify-center"
                   >
                     <Delete size={20} />
                   </button>
                 </div>
-             </div>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-gray-300">
-                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100">
-                    <Grip size={32} className="opacity-20 text-[var(--primary)]" />
-                </div>
-                <p className="font-medium text-gray-400 max-w-[200px] text-sm">Sélectionnez un profil à gauche pour vous connecter.</p>
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* Footer / Copyright */}
-      <div className="absolute bottom-4 text-white/80 text-[10px] font-medium hidden md:block uppercase tracking-wider mix-blend-overlay">
-         &copy; {new Date().getFullYear()} Peelo POS &bull; Terminal Sécurisé
+             </div>
+           )}
+
+           <div className="absolute bottom-6 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+              PEELO POS V2.0 • TERMINAL SÉCURISÉ
+           </div>
+        </div>
       </div>
     </div>
   );

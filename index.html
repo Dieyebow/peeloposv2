@@ -17,25 +17,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
-              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              sans: ['"Roboto"', 'sans-serif'],
             },
             colors: {
-              primary: '#075E54',
+              primary: '#00c58e', // Green transition base
               secondary: '#128C7E',
               accent: '#f97316', 
               dark: '#1e293b',
               light: '#f8fafc'
             },
             borderRadius: {
-              'xl': '0.75rem',
-              '2xl': '1rem', // Overriding default to be smaller
-              '3xl': '1.25rem', // Overriding default to be smaller
+              'xl': '0.5rem', // Sharper (lg equivalent)
+              '2xl': '0.75rem', // Sharper (xl equivalent)
+              '3xl': '1rem', // Sharper (2xl equivalent)
             }
           }
         }
@@ -69,7 +70,7 @@
 }
 </script>
 </head>
-  <body class="bg-gray-100 text-slate-900 overflow-hidden h-screen w-screen select-none font-sans">
+  <body class="bg-[#eaeaec] text-slate-900 overflow-hidden h-screen w-screen select-none font-sans">
     <div id="root" class="h-full w-full"></div>
   </body>
 </html>
