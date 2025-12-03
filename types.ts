@@ -1,3 +1,4 @@
+
 export interface Shop {
   _id: string;
   chatbotId: string;
@@ -84,10 +85,35 @@ export interface TransactionPayload {
   source: 'pos';
 }
 
+export interface TransactionItem {
+  productId: string;
+  title: string;
+  price: number;
+  quantity: number;
+  subtotal: number;
+  variant?: {
+    name: string;
+    attributes?: Record<string, string>;
+  };
+}
+
+export interface TransactionPayment {
+  method: string;
+  amount: number;
+}
+
 export interface TransactionResponse {
   _id: string;
-  transactionNumber: string;
+  chatbotId: string;
+  cashierId: string;
+  cashierName?: string;
+  transactionNumber?: string;
+  items: TransactionItem[];
+  subtotal: number;
   totalAmount: number;
+  payments: TransactionPayment[];
+  cashGiven: number;
   change: number;
-  createdAt: string;
+  status: string;
+  createdAt?: string;
 }

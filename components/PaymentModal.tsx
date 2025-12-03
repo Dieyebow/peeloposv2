@@ -93,8 +93,12 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
       const txn = await api.createTransaction(chatbotId, payload);
       clearCart();
       onSuccess(txn);
-    } catch (e) {
-      alert("Échec de la transaction. Veuillez réessayer.");
+    } catch (e: any) {
+      console.error(e);
+      // Display detailed error with URL for debugging
+      const url = e.config?.url || e.response?.config?.url || 'URL non trouvée';
+      const status = e.response?.status || 'Erreur inconnue';
+      alert(`Échec de la transaction.\nCode: ${status}\nLien: ${url}`);
     } finally {
       setProcessing(false);
     }

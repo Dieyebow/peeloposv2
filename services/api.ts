@@ -50,22 +50,29 @@ export const api = {
      try {
          const res = await axios.post(`${API_BASE}/cashiers/${cashierId}/verify-pin`, { pin });
          return res.data.success;
-     } catch (e) {
+     } catch (e: any) {
+         // 401 Unauthorized indicates incorrect PIN, return false without logging error
+         if (e.response && e.response.status === 401) {
+             return false;
+         }
          console.error("API Error [verifyPin]:", e);
-         // Keep a small backdoor for testing if API fails completely, removing this will lock you out if API is down
-         // Remove the line below if you want strictly ONLY API verification
-         // if (pin === '1234') return true; 
          return false;
      }
   },
 
   createTransaction: async (chatbotId: string, payload: TransactionPayload): Promise<TransactionResponse> => {
+      // Updated URL to correct POS route
+      const url = `${API_BASE}/chatbots/${chatbotId}/pos/transactions`;
+      console.log(`[POST] Request URL: ${url}`);
+      console.log(`[POST] Payload:`, payload);
+      
       try {
-          const res = await axios.post(`${API_BASE}/chatbots/${chatbotId}/transactions`, payload);
+          const res = await axios.post(url, payload);
+          console.log('res.data ==>',res.data);
           if(res.data.success) return res.data.transaction;
           throw new Error("Transaction failed");
       } catch (e) {
-          console.error("API Error [createTransaction]:", e);
+          console.error(`API Error [createTransaction] at ${url}:`, e);
           throw e;
       }
   }
