@@ -1,6 +1,6 @@
 import React from 'react';
 import { usePOS } from '../context/POSContext';
-import { Trash2, Plus, Minus, ShoppingBag, Tag, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ChevronRight } from 'lucide-react';
 
 interface Props {
   onPay: () => void;
@@ -10,9 +10,8 @@ export default function CartSidebar({ onPay }: Props) {
   const { cart, removeFromCart, updateQuantity, clearCart } = usePOS();
   
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const tax = Math.round(subtotal * 0.18); // Example tax 18%
   const discount = 0;
-  const total = subtotal + tax - discount;
+  const total = subtotal - discount;
 
   if (cart.length === 0) {
     return (
@@ -108,28 +107,11 @@ export default function CartSidebar({ onPay }: Props) {
       {/* Footer Area */}
       <div className="px-6 py-6 bg-white border-t border-gray-50 shrink-0">
          
-         {/* Promo Section */}
-         <div className="bg-gray-50 rounded-[18px] p-4 flex items-center justify-between mb-6 border border-gray-100">
-             <div className="flex items-center gap-3">
-                 <div className="p-1.5 bg-gray-800 text-white rounded-lg shadow-sm">
-                     <Tag size={12} fill="currentColor" />
-                 </div>
-                 <span className="text-xs font-semibold text-gray-700">Promo Client (0%)</span>
-             </div>
-             <button className="text-[10px] font-bold text-[var(--primary)] bg-[var(--primary)]/10 px-3 py-1.5 rounded-full hover:bg-[var(--primary)] hover:text-white transition-colors uppercase tracking-wide">
-                 Changer
-             </button>
-         </div>
-
          {/* Summary */}
          <div className="space-y-3 mb-6 px-1">
             <div className="flex justify-between text-sm">
                 <span className="text-gray-500 font-medium">Sous-Total</span>
                 <span className="text-gray-900 font-semibold">{subtotal.toLocaleString()} F</span>
-            </div>
-            <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Taxe (18%)</span>
-                <span className="text-gray-900 font-semibold">{tax.toLocaleString()} F</span>
             </div>
             <div className="flex justify-between text-sm">
                 <span className="text-gray-500 font-medium">Réduction</span>
@@ -141,14 +123,21 @@ export default function CartSidebar({ onPay }: Props) {
             </div>
          </div>
 
-         {/* Payment Method Row */}
+         {/* Payment Method Row - UPDATED LOGOS */}
          <div className="flex items-center justify-between mb-6 group cursor-pointer py-2 px-1 rounded-xl hover:bg-gray-50 transition-colors">
              <div className="flex items-center gap-3">
-                 <div className="flex -space-x-1.5 shadow-sm">
-                     <div className="w-7 h-7 rounded-full bg-[#EB001B] border-2 border-white"></div>
-                     <div className="w-7 h-7 rounded-full bg-[#F79E1B] border-2 border-white"></div>
+                 <div className="flex -space-x-2 shadow-sm">
+                     <div className="w-8 h-8 rounded-full bg-white border-2 border-white overflow-hidden z-20">
+                         <img src="https://api.peelo.chat/public/images/wave.png" alt="Wave" className="w-full h-full object-cover" />
+                     </div>
+                     <div className="w-8 h-8 rounded-full bg-white border-2 border-white overflow-hidden z-10">
+                         <img src="https://api.peelo.chat/public/images/om.png" alt="OM" className="w-full h-full object-cover" />
+                     </div>
+                      <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center z-0">
+                         <span className="text-[10px] font-bold text-gray-500">+2</span>
+                     </div>
                  </div>
-                 <span className="font-semibold text-gray-700 text-sm">Espèces / Carte</span>
+                 <span className="font-semibold text-gray-700 text-sm ml-1">Paiement</span>
              </div>
              <div className="flex items-center gap-1 text-gray-400 text-xs font-bold group-hover:text-gray-600 uppercase tracking-wide">
                  Changer <ChevronRight size={14} />

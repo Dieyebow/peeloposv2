@@ -2,6 +2,7 @@ export interface Shop {
   _id: string;
   chatbotId: string;
   name: string;
+  description?: string;
   logo?: string;
   style: {
     primaryColor: string;

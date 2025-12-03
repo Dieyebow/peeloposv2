@@ -40,12 +40,12 @@ export default function VariantModal({ product, onClose, onConfirm }: Props) {
                   onClick={() => setSelected(variant)}
                   className={`w-full flex items-center gap-6 p-4 rounded-2xl transition-all duration-200 text-left group
                     ${isSelected
-                      ? 'bg-[var(--primary)]/5 ring-2 ring-[var(--primary)]' 
-                      : 'bg-white hover:bg-gray-50 border border-gray-100'
+                      ? 'bg-[var(--primary)]/10' 
+                      : 'bg-white hover:bg-gray-50'
                     }`}
                 >
-                  {/* Variant Image - LARGE */}
-                  <div className="h-28 w-28 rounded-xl overflow-hidden shrink-0 bg-gray-100 border border-gray-100 shadow-sm">
+                  {/* Variant Image - LARGE & BORDERLESS */}
+                  <div className="h-28 w-28 rounded-xl overflow-hidden shrink-0 bg-gray-100">
                      <img 
                         src={variant.images[0] || product.images[0]} 
                         alt={variant.name}
@@ -79,14 +79,13 @@ export default function VariantModal({ product, onClose, onConfirm }: Props) {
                     </div>
                   </div>
 
-                  {/* Checkbox Visual */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 shrink-0
-                      ${isSelected 
-                          ? 'bg-[var(--primary)] text-white scale-110 shadow-md' 
-                          : 'bg-gray-100 text-gray-300'
-                      }
-                  `}>
-                    <Check size={18} strokeWidth={4} />
+                  {/* Checkbox Visual - ONLY VISIBLE WHEN SELECTED */}
+                  <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                    {isSelected && (
+                        <div className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center shadow-md scale-110 animate-in zoom-in duration-200">
+                            <Check size={18} strokeWidth={4} />
+                        </div>
+                    )}
                   </div>
                 </button>
               );
