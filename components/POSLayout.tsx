@@ -3,12 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { usePOS } from '../context/POSContext';
 import { api } from '../services/api';
 import { Product, Variant, CartItem } from '../types';
-import { Search, LogOut, LayoutGrid, Box, History, Users, Settings, ShoppingCart, Loader2, Bell, Layers } from 'lucide-react';
+import { Search, LogOut, History, ShoppingCart, Loader2 } from 'lucide-react';
 
 import VariantModal from './VariantModal';
 import CartSidebar from './CartSidebar';
 import PaymentModal from './PaymentModal';
 import ReceiptModal from './ReceiptModal';
+import TransactionHistory from './TransactionHistory';
 
 export default function POSLayout() {
   const { chatbotId } = useParams<{ chatbotId: string }>();
@@ -25,6 +26,7 @@ export default function POSLayout() {
   const [showPayment, setShowPayment] = useState(false);
   const [lastTransaction, setLastTransaction] = useState(null);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (!cashier) {
@@ -74,18 +76,22 @@ export default function POSLayout() {
   };
 
   const handleVariantConfirm = (variant: Variant) => {
+    console.log('handleVariantConfirm called with variant:', variant.name);
     if (!variantProduct) return;
+    // Use variant name + price as unique identifier since _id is undefined
+    const variantKey = variant._id || `${variant.name}-${variant.price}`;
     const item: CartItem = {
-        key: `${variantProduct._id}-${variant._id}`,
+        key: `${variantProduct._id}-${variantKey}`,
         productId: variantProduct._id,
         name: variantProduct.title,
         price: variant.price,
         quantity: 1,
         image: variant.images[0] || variantProduct.images[0],
         variant: variant.name,
-        variantId: variant._id,
+        variantId: variant._id || variantKey,
         stock: variant.stock
     };
+    console.log('Adding to cart with key:', item.key, 'quantity:', item.quantity);
     addToCart(item);
     setVariantProduct(null);
   };
@@ -113,12 +119,12 @@ export default function POSLayout() {
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  if (loading) return <div className="h-screen w-full flex items-center justify-center bg-[#f3f4f6]"><Loader2 className="animate-spin text-[var(--primary)]" /></div>;
+  if (loading) return <div className="h-viewport w-full flex items-center justify-center bg-[#f3f4f6]"><Loader2 className="animate-spin text-[var(--primary)]" /></div>;
 
   const categories = ['all', ...Array.from(new Set(products.map(p => p.category)))];
 
   return (
-    <div className="flex h-screen w-full bg-[#f3f4f6] overflow-hidden font-sans text-slate-800">
+    <div className="absolute inset-0 flex bg-[#f3f4f6] overflow-hidden font-sans text-slate-800">
       
       {/* 1. DARK SIDEBAR (Fixed Left) */}
       <aside className="hidden md:flex w-20 bg-[#1a1c1e] flex-col items-center py-8 gap-8 shrink-0 z-50">
@@ -128,13 +134,10 @@ export default function POSLayout() {
           </div>
 
           <nav className="flex flex-col gap-6 w-full items-center">
-              <button className="p-3 rounded-xl bg-[var(--primary)] text-white shadow-md">
-                  <LayoutGrid size={24} />
-              </button>
-              <button className="p-3 rounded-xl text-gray-500 hover:bg-white/10 hover:text-white transition-colors">
-                  <Box size={24} />
-              </button>
-              <button className="p-3 rounded-xl text-gray-500 hover:bg-white/10 hover:text-white transition-colors">
+              <button
+                  onClick={() => setShowHistory(true)}
+                  className="p-3 rounded-xl text-gray-500 hover:bg-white/10 hover:text-white transition-colors"
+              >
                   <History size={24} />
               </button>
           </nav>
@@ -249,10 +252,12 @@ export default function POSLayout() {
 
       {/* 3. CART SIDEBAR (Fixed Right) */}
       <aside className={`
-            fixed inset-y-0 right-0 z-50 w-full sm:w-[400px] bg-white border-l border-gray-200 shadow-2xl transform transition-transform duration-300 lg:relative lg:transform-none lg:w-[420px] lg:shadow-none lg:block
+            fixed inset-y-0 right-0 z-50 w-full shrink-0 sm:w-[400px] bg-white border-l border-gray-200 shadow-2xl transform transition-transform duration-300 lg:relative lg:transform-none lg:w-[420px] lg:shadow-none
             ${mobileCartOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
         `}>
-             <CartSidebar onPay={() => setShowPayment(true)} />
+             <div className="absolute inset-0">
+                 <CartSidebar onPay={() => setShowPayment(true)} />
+             </div>
              <button 
                 onClick={() => setMobileCartOpen(false)} 
                 className="lg:hidden absolute top-4 right-4 p-2 bg-gray-100 rounded-full text-gray-500"
@@ -282,12 +287,19 @@ export default function POSLayout() {
       )}
 
       {lastTransaction && (
-          <ReceiptModal 
-            transaction={lastTransaction} 
-            onClose={() => setLastTransaction(null)} 
+          <ReceiptModal
+            transaction={lastTransaction}
+            onClose={() => setLastTransaction(null)}
           />
       )}
-      
+
+      {showHistory && chatbotId && (
+          <TransactionHistory
+            chatbotId={chatbotId}
+            onClose={() => setShowHistory(false)}
+          />
+      )}
+
       {/* Mobile Cart Toggle */}
       <button 
          onClick={() => setMobileCartOpen(true)}

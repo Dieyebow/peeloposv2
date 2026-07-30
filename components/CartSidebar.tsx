@@ -31,7 +31,7 @@ export default function CartSidebar({ onPay }: Props) {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white font-sans text-slate-800">
+    <div className="h-full w-full flex flex-col bg-white font-sans text-slate-800 overflow-hidden">
       {/* Header */}
       <div className="px-6 py-6 flex justify-between items-center bg-white shrink-0">
         <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Détails Transaction</h2>
@@ -105,7 +105,7 @@ export default function CartSidebar({ onPay }: Props) {
       </div>
 
       {/* Footer Area */}
-      <div className="px-6 py-6 bg-white border-t border-gray-50 shrink-0">
+      <div className="px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-white border-t border-gray-50 shrink-0">
          
          {/* Summary */}
          <div className="space-y-3 mb-6 px-1">

@@ -65,7 +65,7 @@ export const api = {
       const url = `${API_BASE}/chatbots/${chatbotId}/pos/transactions`;
       console.log(`[POST] Request URL: ${url}`);
       console.log(`[POST] Payload:`, payload);
-      
+
       try {
           const res = await axios.post(url, payload);
           console.log('res.data ==>',res.data);
@@ -74,6 +74,28 @@ export const api = {
       } catch (e) {
           console.error(`API Error [createTransaction] at ${url}:`, e);
           throw e;
+      }
+  },
+
+  getTransactions: async (chatbotId: string, params?: { limit?: number; skip?: number; cashierId?: string; status?: string }): Promise<TransactionResponse[]> => {
+      const queryParams = new URLSearchParams();
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+      if (params?.skip) queryParams.append('skip', params.skip.toString());
+      if (params?.cashierId) queryParams.append('cashierId', params.cashierId);
+      if (params?.status) queryParams.append('status', params.status);
+
+      const url = `${API_BASE}/chatbots/${chatbotId}/pos/transactions${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+
+      console.log('[GET] Fetching transactions from:', url);
+
+      try {
+          const res = await axios.get(url);
+          console.log('[GET] Response:', res.data);
+          if(res.data.success) return res.data.transactions || [];
+          return [];
+      } catch (e: any) {
+          console.error("API Error [getTransactions]:", e.response?.data || e.message);
+          return [];
       }
   }
 };

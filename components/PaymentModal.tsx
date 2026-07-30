@@ -344,8 +344,8 @@ export default function PaymentModal({ total, onClose, onSuccess }: Props) {
                     </div>
 
                     {/* Numpad Side */}
-                    <div className="w-full md:w-[260px] shrink-0">
-                         <div className="grid grid-cols-3 gap-3 h-full max-h-[400px]">
+                    <div className="w-full md:w-[320px] shrink-0">
+                         <div className="grid grid-cols-3 gap-4 h-full max-h-[400px]">
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
                                 <button
                                     key={num}

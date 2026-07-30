@@ -50,7 +50,7 @@ export default function ReceiptModal({ transaction, onClose }: Props) {
               <div className="absolute -right-3 top-1/2 -mt-2 h-4 w-4 rounded-full bg-black/70" />
               
               <div className="text-center mb-4 pb-4 border-b border-gray-200 border-dashed">
-                  <p className="font-bold text-lg uppercase">{shop?.name || 'STORE'}</p>
+                  <p className="font-bold text-lg uppercase">{shop?.shopname || 'Peelo Store'}</p>
                   <p className="text-xs text-gray-500 mt-1">{formatDate(transaction.createdAt)}</p>
                   <p className="text-xs text-gray-500">Caissier: {transaction.cashierName || cashier?.name}</p>
                   <p className="text-xs text-gray-500">Ref: {transaction.transactionNumber || transaction._id.slice(-6).toUpperCase()}</p>
@@ -125,8 +125,7 @@ export default function ReceiptModal({ transaction, onClose }: Props) {
               
               {/* Header */}
               <div className="text-center mb-3">
-                  <h1 className="text-lg font-bold uppercase mb-1">{shop?.name}</h1>
-                  <p>{shop?.description}</p>
+                  <h1 className="text-lg font-bold uppercase mb-1">{shop?.shopname || 'Peelo Store'}</h1>
                   <div className="my-2 border-b border-black border-dashed"></div>
                   <p>{formatDate(transaction.createdAt)}</p>
                   <p>Caissier: {transaction.cashierName || cashier?.name}</p>

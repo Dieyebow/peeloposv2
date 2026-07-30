@@ -4,13 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Peelo POS</title>
-    <meta name="theme-color" content="#f97316">
+    <meta name="theme-color" content="#000000">
     <meta name="description" content="Système de point de vente moderne">
-    
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="https://pos.peelo.shop/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="https://pos.peelo.shop/favicon-peelo.svg">
+    <link rel="apple-touch-icon" href="https://pos.peelo.shop/favicon.ico">
+
     <!-- PWA Settings -->
     <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Peelo POS">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -55,6 +61,39 @@
       html {
         scroll-behavior: smooth;
       }
+      /* Viewport fallbacks for older devices */
+      .h-viewport {
+          height: 100vh;
+          height: 100dvh;
+      }
+      .min-h-viewport {
+          min-height: 100vh;
+          min-height: 100dvh;
+      }
+
+      /* Barres de défilement forcées visibles (tablettes & desktop) */
+      .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+          display: block; /* Force l'affichage même sur iOS */
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0,0,0,0.02);
+          border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #cbd5e1;
+          border-radius: 10px;
+          border: 2px solid #ffffff;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: #94a3b8;
+      }
+      .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 rgba(0,0,0,0.02);
+          -webkit-overflow-scrolling: touch;
+      }
     </style>
   <script type="importmap">
 {
@@ -69,7 +108,8 @@
 }
 </script>
 </head>
-  <body class="bg-[#eaeaec] text-slate-700 overflow-hidden h-screen w-screen select-none font-sans antialiased">
+  <body class="bg-[#eaeaec] text-slate-700 overflow-hidden fixed top-0 bottom-0 left-0 right-0 w-full select-none font-sans antialiased">
     <div id="root" class="h-full w-full"></div>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

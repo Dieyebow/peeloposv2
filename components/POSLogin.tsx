@@ -3,12 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { usePOS } from '../context/POSContext';
 import { Cashier } from '../types';
-import { Loader2, ArrowLeft, ArrowRight, Delete, ShoppingBag, Store, Lock } from 'lucide-react';
-
-const TEST_BOTS = [
-  { id: '69177048073213c297170052', name: 'Boutique 1' },
-  { id: '68af25506e65f69f195e2cfc', name: 'Boutique 2' }
-];
+import { Loader2, ArrowLeft, ArrowRight, Delete, ShoppingBag, Store, Lock, Download } from 'lucide-react';
+import { DynamicManifest } from './DynamicManifest';
 
 export default function POSLogin() {
   const { chatbotId } = useParams<{ chatbotId: string }>();
@@ -21,11 +17,15 @@ export default function POSLogin() {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [verifying, setVerifying] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallButton, setShowInstallButton] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (chatbotId) {
       setChatbotId(chatbotId);
+      // Save chatbotId to localStorage for PWA reopening
+      localStorage.setItem('peelo_pos_chatbotId', chatbotId);
       loadData(chatbotId);
     }
   }, [chatbotId]);
@@ -44,7 +44,7 @@ export default function POSLogin() {
         e.preventDefault();
         const pastedData = e.clipboardData?.getData('text') || '';
         const numericData = pastedData.replace(/\D/g, '').slice(0, 4);
-        
+
         if (numericData) {
             setPin(numericData);
             if (numericData.length === 4) {
@@ -57,16 +57,53 @@ export default function POSLogin() {
     return () => window.removeEventListener('paste', handlePaste);
   }, [selectedCashier]);
 
+  // PWA Install handling
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallButton(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      alert('L\'installation PWA n\'est pas disponible dans ce navigateur ou l\'app est déjà installée.');
+      return;
+    }
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+      setShowInstallButton(false);
+    }
+  };
+
   const loadData = async (id: string) => {
     setLoading(true);
     setCashiers([]);
-    
+
     try {
       const [shopData, cashierData] = await Promise.all([
         api.getShop(id),
         api.getCashiers(id)
       ]);
-      if (shopData) setShop(shopData);
+      if (shopData) {
+        console.log('=== SHOP DATA ===', shopData);
+        console.log('shop.name:', shopData.name);
+        console.log('shop.shopName:', shopData.shopName);
+        console.log('shop.title:', shopData.title);
+        console.log('shop.description:', shopData.description);
+        setShop(shopData);
+      }
       setCashiers(cashierData);
     } catch (e) {
       console.error(e);
@@ -74,11 +111,6 @@ export default function POSLogin() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSwitchBot = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newId = e.target.value;
-    navigate(`/pos-login/${newId}`);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,7 +175,9 @@ export default function POSLogin() {
 
   return (
     <div className="fixed inset-0 w-full h-full bg-[#f8fafc] flex items-center justify-center font-sans overflow-hidden">
-      
+      {/* Dynamic manifest for PWA */}
+      <DynamicManifest />
+
       {/* Background with Split */}
       <div className="absolute inset-0 flex">
           {/* Left Side - Brand Color */}
@@ -163,8 +197,10 @@ export default function POSLogin() {
                           </div>
                       )}
                   </div>
-                  <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">{shop?.name || 'Peelo POS'}</h1>
-                  <p className="text-xl opacity-90 font-medium max-w-md">{shop?.description || 'Bienvenue sur votre terminal de vente.'}</p>
+                  <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">{shop?.shopname || 'Peelo POS'}</h1>
+                  <p className="text-xl opacity-90 font-medium max-w-md line-clamp-2">
+                    {shop?.description || 'Bienvenue sur votre terminal de vente.'}
+                  </p>
               </div>
 
               {/* Footer Info */}
@@ -177,11 +213,12 @@ export default function POSLogin() {
 
           {/* Right Side - Interaction */}
           <div className="hidden md:flex w-1/2 h-full bg-white flex-col items-center justify-center p-12 relative">
-             <div className="absolute top-8 right-8">
+             <div className="absolute top-8 left-8 right-8 flex items-center justify-between">
                 <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full border border-gray-100">
                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                     <span className="text-xs font-bold text-gray-500">Système Connecté</span>
                 </div>
+                <img src="https://peelo.chat/assets/img/peelo/v2.png" alt="Peelo" className="h-8 w-auto" />
              </div>
              
              <div className="w-full max-w-md">
@@ -254,6 +291,13 @@ export default function POSLogin() {
 
                          {error && <p className="text-center text-red-500 font-bold mb-6 text-sm">{error}</p>}
 
+                         {verifying && (
+                             <div className="flex items-center justify-center gap-2 mb-6 text-[var(--secondary)] font-bold">
+                                 <Loader2 className="animate-spin" size={20} />
+                                 <span>Vérification en cours...</span>
+                             </div>
+                         )}
+
                          <input
                              ref={inputRef}
                              type="text"
@@ -263,6 +307,7 @@ export default function POSLogin() {
                              onChange={handleInputChange}
                              className="absolute inset-0 opacity-0 z-10"
                              autoFocus
+                             disabled={verifying}
                          />
 
                          {/* Numpad */}
@@ -271,18 +316,28 @@ export default function POSLogin() {
                                  <button
                                      key={num}
                                      onClick={() => handlePinInput(num.toString())}
+                                     disabled={verifying}
                                      className={`
                                          h-16 rounded-xl font-bold text-2xl transition-all shadow-sm active:scale-95 border border-gray-100
                                          ${num === 0 ? 'col-start-2' : ''}
-                                         bg-white text-gray-900 hover:bg-[var(--secondary)] hover:text-white hover:border-[var(--secondary)]
+                                         ${verifying
+                                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                             : 'bg-white text-gray-900 hover:bg-[var(--secondary)] hover:text-white hover:border-[var(--secondary)]'
+                                         }
                                      `}
                                  >
                                      {num}
                                  </button>
                              ))}
-                             <button 
+                             <button
                                  onClick={handleBackspace}
-                                 className="h-16 rounded-xl font-bold text-xl flex items-center justify-center bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors col-start-3 row-start-4 active:scale-95 border border-transparent"
+                                 disabled={verifying}
+                                 className={`h-16 rounded-xl font-bold text-xl flex items-center justify-center transition-colors col-start-3 row-start-4 active:scale-95 border border-transparent
+                                     ${verifying
+                                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                         : 'bg-gray-50 text-gray-500 hover:bg-red-50 hover:text-red-500 hover:border-red-200'
+                                     }
+                                 `}
                              >
                                  <Delete size={24} />
                              </button>
@@ -291,18 +346,18 @@ export default function POSLogin() {
                  )}
              </div>
              
-             {/* Mobile Dev Switcher */}
-             <div className="absolute bottom-4 right-4 z-50">
-                 <select 
-                   value={chatbotId} 
-                   onChange={handleSwitchBot}
-                   className="text-xs bg-gray-50 border border-gray-200 rounded p-1 text-gray-400"
+             {/* PWA Install Button */}
+             {showInstallButton && (
+               <div className="absolute bottom-4 right-4 z-50">
+                 <button
+                   onClick={handleInstallClick}
+                   className="flex items-center gap-2 px-4 py-2 bg-[var(--primary)] text-white rounded-lg font-bold text-sm hover:opacity-90 transition-all shadow-lg"
                  >
-                   {TEST_BOTS.map(bot => (
-                     <option key={bot.id} value={bot.id}>{bot.name}</option>
-                   ))}
-                 </select>
-             </div>
+                   <Download size={18} />
+                   Installer l'app
+                 </button>
+               </div>
+             )}
           </div>
       </div>
       

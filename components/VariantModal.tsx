@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product, Variant } from '../types';
-import { X, Check, Box, ShoppingBag } from 'lucide-react';
+import { X, Check, AlertCircle, ShoppingBag, Package } from 'lucide-react';
+import { usePOS } from '../context/POSContext';
 
 interface Props {
   product: Product;
@@ -9,111 +10,194 @@ interface Props {
 }
 
 export default function VariantModal({ product, onClose, onConfirm }: Props) {
-  const [selected, setSelected] = React.useState<Variant | null>(null);
+  const { shop } = usePOS();
+  // Auto-select the first in-stock variant if available
+  const [selected, setSelected] = useState<Variant | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (product.variants && product.variants.length > 0) {
+      const firstInStock = product.variants.find(v => v.stock > 0);
+      if (firstInStock) {
+        setSelected(firstInStock);
+      }
+    }
+  }, [product]);
+
+  const handleConfirm = () => {
+    if (selected && !isSubmitting) {
+      setIsSubmitting(true);
+      onConfirm(selected);
+      onClose();
+    }
+  };
+
+  const getStockStatus = (stock: number) => {
+    if (stock === 0) return { label: 'Épuisé', color: 'text-red-500', bg: 'bg-red-50' };
+    if (stock < 5) return { label: `Faible (${stock})`, color: 'text-orange-500', bg: 'bg-orange-50' };
+    return { label: `${stock} en stock`, color: 'text-green-600', bg: 'bg-green-50' };
+  };
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200 font-sans">
-      <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-        
-        {/* Header */}
-        <div className="p-8 pb-4 flex justify-between items-start shrink-0">
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900 tracking-tight">{product.title}</h3>
-            <p className="text-base text-gray-500 font-medium mt-1 uppercase tracking-wide">Sélectionnez une option</p>
-          </div>
-          <button 
-            onClick={onClose} 
-            className="p-2 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-900"
-          >
-            <X size={24} />
-          </button>
-        </div>
-        
-        {/* Scrollable Content */}
-        <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
-          <div className="space-y-4">
-            {product.variants.map((variant) => {
-              const isSelected = selected?._id === variant._id;
-              return (
-                <button
-                  key={variant._id}
-                  onClick={() => setSelected(variant)}
-                  className={`w-full flex items-center gap-6 p-4 rounded-2xl transition-all duration-200 text-left group
-                    ${isSelected
-                      ? 'bg-[var(--primary)]/10' 
-                      : 'bg-white hover:bg-gray-50'
-                    }`}
-                >
-                  {/* Variant Image - LARGE & BORDERLESS */}
-                  <div className="h-28 w-28 rounded-xl overflow-hidden shrink-0 bg-gray-100">
-                     <img 
-                        src={variant.images[0] || product.images[0]} 
-                        alt={variant.name}
-                        onError={(e) => e.currentTarget.style.display = 'none'}
-                        className="w-full h-full object-cover" 
-                     />
-                     {(!variant.images[0] && !product.images[0]) && (
-                       <div className="w-full h-full flex items-center justify-center text-gray-300">
-                         <Box size={32} />
-                       </div>
-                     )}
-                  </div>
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+      onClick={handleBackdropClick}
+    >
+      <div
+        className="bg-white w-full max-w-3xl rounded-[24px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
 
-                  {/* Details */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-2">
-                        <p className={`text-lg font-bold truncate pr-4 ${isSelected ? 'text-[var(--primary)]' : 'text-gray-900'}`}>
-                          {variant.name}
-                        </p>
-                        <span className="text-xl font-bold text-gray-900 whitespace-nowrap">{variant.price.toLocaleString()} F</span>
-                    </div>
-                    
-                    <div>
-                       <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide
-                          ${isSelected 
-                              ? 'bg-[var(--primary)] text-white' 
-                              : 'bg-gray-100 text-gray-500'
-                          }`}>
-                          Stock: {variant.stock}
-                       </span>
-                    </div>
-                  </div>
+        {/* Header with Image Background effect */}
+        <div className="relative h-72 bg-gray-100 shrink-0 overflow-hidden">
+            {(product.images?.[0] || (product.variants?.[0]?.images?.[0])) ? (
+               <div className="absolute inset-0">
+                  <img
+                    src={product.images?.[0] || product.variants?.[0]?.images?.[0]}
+                    className="w-full h-full object-cover blur-sm opacity-50 scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+               </div>
+            ) : null}
 
-                  {/* Checkbox Visual - ONLY VISIBLE WHEN SELECTED */}
-                  <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                    {isSelected && (
-                        <div className="w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center shadow-md scale-110 animate-in zoom-in duration-200">
-                            <Check size={18} strokeWidth={4} />
+            <button
+                onClick={(e) => {
+                    console.log('X button clicked');
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onClose();
+                }}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 hover:bg-white flex items-center justify-center text-gray-500 hover:text-gray-900 transition-colors shadow-sm z-20 cursor-pointer"
+            >
+                <X size={20} />
+            </button>
+
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6">
+                <div className="w-48 h-48 rounded-2xl bg-white p-2 shadow-2xl mb-4">
+                    {(selected?.images && selected.images.length > 0 && selected.images[0]) || product.images?.[0] || product.variants?.[0]?.images?.[0] ? (
+                        <img
+                          key={selected?._id || 'default'}
+                          src={(selected?.images && selected.images.length > 0 && selected.images[0]) || product.images?.[0] || product.variants?.[0]?.images?.[0]}
+                          className="w-full h-full object-cover rounded-xl transition-all duration-300"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-gray-50 rounded-xl flex items-center justify-center text-gray-300">
+                            <ShoppingBag size={48} />
                         </div>
                     )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                </div>
+                <div className="text-center">
+                    <h3 className="font-bold text-2xl text-gray-900 mb-1">{product.title}</h3>
+                    <p className="text-gray-500 text-sm font-medium">Sélectionnez une option</p>
+                </div>
+            </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-8 border-t border-gray-50 bg-white shrink-0 flex gap-4">
-          <button 
-            onClick={onClose}
-            className="flex-1 h-14 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors text-lg"
-          >
-            Annuler
-          </button>
-          <button 
-            onClick={() => selected && onConfirm(selected)}
-            disabled={!selected}
-            className={`flex-[2] h-14 rounded-xl font-bold text-white transition-all shadow-xl flex items-center justify-center gap-3 text-lg
-              ${selected 
-                ? 'bg-[var(--primary)] hover:opacity-90 active:scale-[0.98] shadow-[var(--primary)]/25 cursor-pointer' 
-                : 'bg-gray-200 text-white shadow-none cursor-not-allowed'
-              }`}
-          >
-            <ShoppingBag size={20} />
-            Ajouter au panier
-          </button>
+        {/* Scrollable Content */}
+        <div className="p-6 overflow-y-auto custom-scrollbar">
+            
+            <div className="mb-6">
+                <div className="flex justify-between items-center mb-3">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Variantes Disponibles</span>
+                    {selected && (
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${getStockStatus(selected.stock).bg} ${getStockStatus(selected.stock).color}`}>
+                            {getStockStatus(selected.stock).label}
+                        </span>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                    {product.variants.map((variant, index) => {
+                        // Use name + price as unique identifier since _id is undefined
+                        const variantKey = `${variant.name}-${variant.price}`;
+                        const selectedKey = selected ? `${selected.name}-${selected.price}` : null;
+                        const isSelected = selected !== null && variantKey === selectedKey;
+                        const isOutOfStock = variant.stock === 0;
+
+                        return (
+                            <button
+                                key={index}
+                                disabled={isOutOfStock}
+                                onClick={() => {
+                                    setSelected(variant);
+                                }}
+                                className={`
+                                    relative p-4 rounded-xl border-2 text-left transition-all duration-200 group
+                                    ${isSelected
+                                        ? 'border-gray-900 bg-gray-50'
+                                        : 'border-gray-100 bg-white hover:border-gray-200'
+                                    }
+                                    ${isOutOfStock ? 'opacity-50 cursor-not-allowed grayscale' : ''}
+                                `}
+                            >
+                                <div className="flex justify-between items-start mb-1">
+                                    <span className={`font-bold text-sm ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>
+                                        {variant.name}
+                                    </span>
+                                    {isSelected && (
+                                        <div className="bg-gray-900 text-white rounded-full p-1 shadow-md">
+                                            <Check size={16} strokeWidth={3} />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex justify-between items-end">
+                                    <span className="font-bold text-gray-900">{variant.price.toLocaleString()} F</span>
+                                    {!isOutOfStock && variant.stock < 5 && (
+                                        <span className="text-[10px] text-orange-500 font-bold flex items-center gap-1">
+                                            <AlertCircle size={10} /> Fin de stock
+                                        </span>
+                                    )}
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Product Details (Optional extra info) */}
+            <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-3">
+                <div className="bg-white p-2 rounded-lg text-gray-400 shadow-sm">
+                    <Package size={20} />
+                </div>
+                <div className="flex-1">
+                     <p className="text-xs text-gray-500 font-medium">Référence Produit</p>
+                     <p className="text-sm font-bold text-gray-900">
+                        {selected?._id?.slice(-6).toUpperCase() || product._id?.slice(-6).toUpperCase() || 'REF'}
+                     </p>
+                </div>
+            </div>
+
         </div>
+
+        {/* Footer Actions */}
+        <div className="p-6 border-t border-gray-100 bg-white mt-auto">
+            <div className="flex items-center justify-between mb-4">
+                <span className="text-gray-500 font-medium">Prix unitaire</span>
+                <span className="text-2xl font-extrabold text-gray-900">
+                    {selected ? selected.price.toLocaleString() : product.price.toLocaleString()} F
+                </span>
+            </div>
+
+            <button
+                onClick={handleConfirm}
+                disabled={!selected || selected.stock === 0}
+                className={`w-full py-4 rounded-[18px] font-bold text-lg shadow-xl transition-all flex items-center justify-center gap-2
+                    ${selected && selected.stock > 0
+                        ? 'bg-[var(--primary)] text-white hover:opacity-90 active:scale-[0.98] shadow-[var(--primary)]/20'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                    }
+                `}
+            >
+                {selected?.stock === 0 ? 'Rupture de stock' : 'Ajouter au panier'}
+            </button>
+        </div>
+
       </div>
     </div>
   );

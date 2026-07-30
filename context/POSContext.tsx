@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, PropsWithChildren } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, PropsWithChildren } from 'react';
 import { Cashier, Shop, CartItem } from '../types';
 
 interface POSContextType {
@@ -22,6 +22,7 @@ export const POSProvider = ({ children }: PropsWithChildren<{}>) => {
   const [cashier, setCashier] = useState<Cashier | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [chatbotId, setChatbotId] = useState<string | null>(null);
+  const addingRef = useRef(false);
 
   // Inject Shop Colors into CSS Variables
   useEffect(() => {
@@ -41,15 +42,33 @@ export const POSProvider = ({ children }: PropsWithChildren<{}>) => {
   }, [shop]);
 
   const addToCart = (newItem: CartItem) => {
+    console.log('addToCart called with key:', newItem.key, 'quantity:', newItem.quantity);
+
+    // Prevent double execution in React StrictMode
+    if (addingRef.current) {
+      console.log('Prevented double add - already processing');
+      return;
+    }
+
+    addingRef.current = true;
+
     setCart(prev => {
       const existingIdx = prev.findIndex(item => item.key === newItem.key);
       if (existingIdx >= 0) {
         const updated = [...prev];
+        const oldQty = updated[existingIdx].quantity;
         updated[existingIdx].quantity += newItem.quantity;
+        console.log('Item exists. Old qty:', oldQty, 'Adding:', newItem.quantity, 'New qty:', updated[existingIdx].quantity);
         return updated;
       }
+      console.log('New item added to cart');
       return [...prev, newItem];
     });
+
+    // Reset the flag after a short delay
+    setTimeout(() => {
+      addingRef.current = false;
+    }, 100);
   };
 
   const updateQuantity = (key: string, delta: number) => {
